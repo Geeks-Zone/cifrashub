@@ -107,9 +107,7 @@ export function SongTextPreviewEditor({
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSectionTexts(songData.map(sectionToPlainText));
-     
     setActiveSectionIndex(0);
-     
     setApplyError(null);
   }, [songData]);
 
@@ -124,7 +122,7 @@ export function SongTextPreviewEditor({
    */
   const sectionParsed = useMemo(
     () => sectionTexts.map((t) => parsePlainTextCifra(t)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
     // Comparação pelo conteúdo de cada seção; React faz referential equality no array,
     // mas o spread cria novo array só quando sectionTexts muda de comprimento ou de item.
     // useMemo re-runs sempre que sectionTexts muda — e cada result.ok vem de cada t.

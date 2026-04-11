@@ -21,7 +21,7 @@
     "db:push": "drizzle-kit push",
     "db:push:ci": "drizzle-kit push --force",
     "db:studio": "drizzle-kit studio",
-    "generate-icons": "node scripts/generate-icons.js"
+    "generate-icons": "node scripts/generate-icons.cjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",

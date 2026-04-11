@@ -1,6 +1,9 @@
 #!/usr/bin/env node
-// Generates PWA icons and favicon from public/logo.png using sharp.
-// Usage: node scripts/generate-icons.js
+/**
+ * Generates PWA icons, favicon, and OG image from public/logo.png using sharp.
+ * Usage: node scripts/generate-icons.cjs
+ */
+/* eslint-disable @typescript-eslint/no-require-imports */
 const sharp = require('sharp');
 const fs = require('fs');
 const path = require('path');
@@ -63,6 +66,14 @@ async function main() {
   const ico = buildIco(favicon32, 32, 32);
   fs.writeFileSync(path.join(appDir, 'favicon.ico'), ico);
   console.log('Generated src/app/favicon.ico (32x32)');
+
+  // og-image.png — 1200x630 for social media previews (Open Graph / Twitter).
+  // Dark background matches the app's dark theme.
+  await sharp(logoPath)
+    .resize(1200, 630, { fit: 'contain', background: { r: 10, g: 10, b: 10, alpha: 1 } })
+    .png()
+    .toFile(path.join(publicDir, 'og-image.png'));
+  console.log('Generated og-image.png (1200x630)');
 
   console.log('Done!');
 }
