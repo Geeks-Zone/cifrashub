@@ -78,7 +78,7 @@ export function HomeView({
               <Guitar className="size-8 text-primary" />
             </div>
             <h1 className="text-5xl font-extrabold tracking-tight text-foreground md:text-6xl">
-              Cifras<span className="text-primary">Pro</span>
+              Cifras<span className="text-primary">Hub</span>
             </h1>
           </div>
           <SearchBar
