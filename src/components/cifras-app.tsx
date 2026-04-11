@@ -1043,7 +1043,8 @@ export function CifrasApp() {
       setZenMode(false);
       setAutoScroll(false);
       setMetronomeActive(false);
-      setYoutubeMiniOpen(true);
+      // Mini YouTube só ao pedido (botão no header), evita loading duplo ao abrir a cifra.
+      setYoutubeMiniOpen(false);
 
       if (offlineData) {
         setSongData(offlineData);
