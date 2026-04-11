@@ -1,7 +1,7 @@
 {
   "name": "cifrashub",
   "version": "0.1.0",
-  "description": "Chord sheet visualizer for any chordal instrument — guitar, bass, ukulele, keyboard and more — with folders, transposition, metronome, tuner, setlists, and stage mode.",
+  "description": "Chord sheet visualizer for any chordal instrument — guitar, bass, keyboard and more — with folders, transposition, metronome, tuner, setlists, and stage mode.",
   "license": "MIT",
   "author": "CifrasHub Contributors",
   "repository": {
