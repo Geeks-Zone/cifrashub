@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { Bookmark, Loader2 } from "lucide-react";
 import { AuthHeaderControl } from "@/components/auth/user-menu";
 import { SearchBar } from "./search-bar";
@@ -75,13 +74,11 @@ export function HomeView({
       <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center px-5 pt-12 pb-24">
         <div className="mb-14 flex w-full flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
           <div className="mb-10 flex items-center gap-4">
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src="/logo-mark.png"
               alt="CifrasHub"
-              width={64}
-              height={64}
-              className="size-16"
-              priority
+              className="h-16 w-16 object-contain"
             />
             <h1 className="text-5xl font-extrabold tracking-tight text-foreground md:text-6xl">
               Cifras<span className="text-primary">Hub</span>
