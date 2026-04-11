@@ -4,6 +4,7 @@ import { NeonAuthProvider } from "@/components/providers/neon-auth-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "sonner";
 import { PWARegister } from "@/components/pwa-register";
+import { SiteFooter } from "@/components/site-footer";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -88,10 +89,15 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`dark ${spaceGrotesk.variable} ${spaceMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans">
+      <body className="flex min-h-full flex-col font-sans">
         <NeonAuthProvider>
           <PWARegister />
-          <TooltipProvider>{children}</TooltipProvider>
+          <TooltipProvider>
+            <div className="flex min-h-full flex-1 flex-col">
+              <div className="flex-1">{children}</div>
+              <SiteFooter />
+            </div>
+          </TooltipProvider>
           <Toaster
             position="bottom-center"
             richColors
