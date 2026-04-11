@@ -29,14 +29,14 @@ export const metadata: Metadata = {
   },
   description:
     "Visualizador de cifras com pastas, transposição, metrônomo, afinador e ferramentas de palco.",
-  keywords: ["cifras", "acordes", "cifras de música", "transposição", "violao", "guitarra"],
+  keywords: ["cifras", "acordes", "cifras de música", "transposição", "violao", "guitarra", "baixo", "teclado", "ukulele", "cavaquinho"],
   authors: [{ name: "CifrasHub" }],
   creator: "CifrasHub",
   openGraph: {
     type: "website",
     locale: "pt_BR",
     siteName: "CifrasHub",
-    title: "CifrasHub — Cifras para Violo & Guitarra",
+    title: "CifrasHub — Cifras para Todos os Instrumentos",
     description:
       "Visualize cifras com transposição, capotraste, modo palco e ferramentas de show.",
     images: [

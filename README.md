@@ -1,6 +1,6 @@
 # CifrasHub
 
-Visualizador de cifras para violão e guitarra com pastas, transposição, metrônomo, afinador e ferramentas de palco.
+Visualizador de cifras para qualquer instrumentista — violão, guitarra, baixo, teclado, ukulele e mais — com pastas, transposição, metrônomo, afinador e ferramentas de palco.
 
 [English](#english) · [Português](#português)
 
