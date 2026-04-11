@@ -1,6 +1,6 @@
 "use client";
 
-import { LogIn } from "lucide-react";
+import { CircleUser } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { signIn } from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
@@ -23,9 +23,10 @@ export function LoginButton({ className, compact }: LoginButtonProps) {
           className,
         )}
         title="Entrar com Google"
+        aria-label="Entrar com Google"
         onClick={() => signIn("google")}
       >
-        <LogIn className="size-4" />
+        <CircleUser className="size-4" strokeWidth={2} />
       </Button>
     );
   }
@@ -38,7 +39,7 @@ export function LoginButton({ className, compact }: LoginButtonProps) {
       className={cn("rounded-full", className)}
       onClick={() => signIn("google")}
     >
-      <LogIn className="mr-2 size-4" />
+      <CircleUser className="mr-2 size-4" strokeWidth={2} />
       Entrar com Google
     </Button>
   );
