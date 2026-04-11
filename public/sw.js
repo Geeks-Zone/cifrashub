@@ -1,7 +1,7 @@
-// CifrasPro Service Worker
+// CifrasHub Service Worker
 // Strategy: Network-first for pages/API, Cache-first for static assets
 
-const CACHE_NAME = 'cifraspro-v1';
+const CACHE_NAME = 'cifrashub-v1';
 
 // Static assets to pre-cache on install
 const PRECACHE_URLS = [
