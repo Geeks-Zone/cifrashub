@@ -1,6 +1,11 @@
 #!/usr/bin/env node
 /**
- * Generates PWA icons, favicon, and OG image from public/logo.png using sharp.
+ * Generates PWA icons, favicon, and OG image using sharp.
+ *
+ * Sources:
+ *   - public/logo-mark.png  → icons (favicon, PWA, apple-touch, home screen)
+ *   - public/logo.png       → OG image (full brand with text)
+ *
  * Usage: node scripts/generate-icons.cjs
  */
 /* eslint-disable @typescript-eslint/no-require-imports */
@@ -10,6 +15,7 @@ const path = require('path');
 
 const publicDir = path.join(__dirname, '..', 'public');
 const appDir = path.join(__dirname, '..', 'src', 'app');
+const markPath = path.join(publicDir, 'logo-mark.png');
 const logoPath = path.join(publicDir, 'logo.png');
 
 // Build a minimal ICO file containing a single embedded PNG.
@@ -38,11 +44,16 @@ function buildIco(pngBuffer, width, height) {
 }
 
 async function main() {
+  if (!fs.existsSync(markPath)) {
+    console.error('logo-mark.png not found at', markPath);
+    process.exit(1);
+  }
   if (!fs.existsSync(logoPath)) {
     console.error('logo.png not found at', logoPath);
     process.exit(1);
   }
 
+  // Icons — generated from the logomark (pick + guitar, no text)
   const pngSizes = [
     { file: path.join(publicDir, 'icon-512.png'), size: 512 },
     { file: path.join(publicDir, 'icon-192.png'), size: 192 },
@@ -50,7 +61,7 @@ async function main() {
   ];
 
   for (const { file, size } of pngSizes) {
-    await sharp(logoPath)
+    await sharp(markPath)
       .resize(size, size, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
       .png()
       .toFile(file);
@@ -58,7 +69,7 @@ async function main() {
   }
 
   // favicon.ico — 32x32 PNG wrapped in ICO container
-  const favicon32 = await sharp(logoPath)
+  const favicon32 = await sharp(markPath)
     .resize(32, 32, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
     .png()
     .toBuffer();
@@ -68,7 +79,7 @@ async function main() {
   console.log('Generated src/app/favicon.ico (32x32)');
 
   // og-image.png — 1200x630 for social media previews (Open Graph / Twitter).
-  // Dark background matches the app's dark theme.
+  // Uses the full logo (with text) on a dark background matching the theme.
   await sharp(logoPath)
     .resize(1200, 630, { fit: 'contain', background: { r: 10, g: 10, b: 10, alpha: 1 } })
     .png()
