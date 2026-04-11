@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   },
   description:
     "Visualizador de cifras com pastas, transposição, metrônomo, afinador e ferramentas de palco.",
-  keywords: ["cifras", "acordes", "cifras de música", "transposição", "violao", "guitarra", "baixo", "teclado", "cavaquinho"],
+  keywords: ["cifras", "acordes", "cifras de música", "transposição", "violao", "guitarra", "baixo", "teclado"],
   authors: [{ name: "CifrasHub" }],
   creator: "CifrasHub",
   openGraph: {
