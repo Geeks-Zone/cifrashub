@@ -87,9 +87,19 @@ Acesse [http://localhost:3000](http://localhost:3000).
 | `npm run db:push` | Aplica o schema ao banco de dados |
 | `npm run db:studio` | Abre o Drizzle Studio (GUI do banco) |
 
-### Deploy
+### Deploy (Vercel)
 
-O projeto está configurado para deploy no **Vercel**. Conecte o repositório ao Vercel e configure as variáveis de ambiente do `.env.example` no painel do Vercel.
+1. Conecte o repositório ao [Vercel](https://vercel.com/new)
+2. Em **Settings → Environment Variables**, configure as variáveis do `.env.example` para os ambientes **Production**, **Preview** e **Development**:
+   - `DATABASE_URL` — connection string pooled do Neon
+   - `DATABASE_URL_UNPOOLED` — connection string direct do Neon (necessária para `drizzle-kit push`)
+   - `AUTH_COOKIE_SECRET` — gerado com `openssl rand -base64 32`
+   - `NEON_AUTH_URL` — URL do seu projeto Neon Auth
+   - `NEXT_PUBLIC_BASE_URL` — domínio público (ex.: `https://cifrashub.app`)
+3. O comando de build é `npm run vercel-build`, que em Production aplica migrações SQL e faz `drizzle-kit push` antes do `next build`. Em Preview, só roda o `next build`.
+4. Clique em **Deploy**.
+
+> **Atenção:** se `DATABASE_URL` não estiver configurada em Production, o build falha com mensagem clara indicando quais variáveis estão faltando.
 
 ---
 
