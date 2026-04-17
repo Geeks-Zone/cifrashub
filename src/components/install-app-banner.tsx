@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Share, X, Download, MoreHorizontal } from "lucide-react";
 import { usePwaInstall } from "@/hooks/use-pwa-install";
 import { Button } from "@/components/ui/button";
@@ -16,12 +16,10 @@ const DISMISSED_KEY = "pwa-install-dismissed";
 
 export function InstallAppBanner() {
   const { canPrompt, isIos, isInstalled, promptInstall } = usePwaInstall();
-  const [dismissed, setDismissed] = useState(true); // start hidden to avoid flash
+  const [dismissed, setDismissed] = useState(
+    () => typeof window === "undefined" || localStorage.getItem(DISMISSED_KEY) === "1",
+  );
   const [iosDialogOpen, setIosDialogOpen] = useState(false);
-
-  useEffect(() => {
-    setDismissed(localStorage.getItem(DISMISSED_KEY) === "1");
-  }, []);
 
   const dismiss = () => {
     localStorage.setItem(DISMISSED_KEY, "1");
@@ -108,7 +106,7 @@ export function InstallAppBanner() {
               </span>
               <span>
                 Role para baixo e toque em{" "}
-                <strong>"Adicionar à Tela de Início"</strong>.
+                <strong>&quot;Adicionar à Tela de Início&quot;</strong>.
               </span>
             </li>
             <li className="flex items-start gap-3">
@@ -116,7 +114,7 @@ export function InstallAppBanner() {
                 3
               </span>
               <span>
-                Confirme tocando em <strong>"Adicionar"</strong> no canto
+                Confirme tocando em <strong>&quot;Adicionar&quot;</strong> no canto
                 superior direito.
               </span>
             </li>

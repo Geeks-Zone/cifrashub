@@ -17,26 +17,32 @@ export type PwaInstallState = {
   promptInstall: () => Promise<void>;
 };
 
+function getIsInstalled() {
+  if (typeof window === "undefined") return false;
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    (navigator as { standalone?: boolean }).standalone === true
+  );
+}
+
+function getIsIos(standalone: boolean) {
+  if (typeof window === "undefined") return false;
+  const ua = navigator.userAgent;
+  const isIosDevice =
+    /iPhone|iPad|iPod/.test(ua) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  // Chrome/Firefox on iOS use CriOS/FxiOS — they don't support Add to Home Screen via banner
+  const isSafari = /Safari/.test(ua) && !/Chrome|CriOS|FxiOS|EdgiOS/.test(ua);
+  return isIosDevice && isSafari && !standalone;
+}
+
 export function usePwaInstall(): PwaInstallState {
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
-  const [isInstalled, setIsInstalled] = useState(false);
-  const [isIos, setIsIos] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(getIsInstalled);
+  const [isIos] = useState(() => getIsIos(getIsInstalled()));
 
   useEffect(() => {
-    const standalone =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      (navigator as { standalone?: boolean }).standalone === true;
-    setIsInstalled(standalone);
-
-    const ua = navigator.userAgent;
-    const isIosDevice =
-      /iPhone|iPad|iPod/.test(ua) ||
-      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-    // Chrome/Firefox on iOS use CriOS/FxiOS — they don't support Add to Home Screen via banner
-    const isSafari = /Safari/.test(ua) && !/Chrome|CriOS|FxiOS|EdgiOS/.test(ua);
-    setIsIos(isIosDevice && isSafari && !standalone);
-
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
