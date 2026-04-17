@@ -162,6 +162,14 @@ Open [http://localhost:3000](http://localhost:3000).
 **EN:** This project is a personal chord sheet organization tool. Chord content (lyrics, chords) is fetched directly by the user's browser from [Cifra Club](https://www.cifraclub.com.br/) at the time of viewing — CifrasHub does **not store, redistribute, or reproduce** that content. By using CifrasHub, you agree to [Cifra Club's Terms of Use](https://www.cifraclub.com.br/info/termos-de-uso/). CifrasHub has no commercial or official relationship with Cifra Club.
 
 ---
+## Comunidade
+
+Este projeto tem uma comunidade no WhatsApp para tirar dúvidas, compartilhar ideias e acompanhar novidades.
+
+Entre pelo link: [WhatsApp Community](https://chat.whatsapp.com/Jmzd8D79eyGBIHElnAlZJv)
+
+---
+
 
 ## Contributing
 
