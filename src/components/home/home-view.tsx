@@ -7,6 +7,7 @@ import { FolderGrid } from "./folder-grid";
 import { RecentList } from "./recent-list";
 import { SetlistsHomeSection } from "@/components/setlist/setlists-home-section";
 import { useSearchDebounced } from "@/hooks/use-search";
+import { InstallAppBanner } from "@/components/install-app-banner";
 import type {
   Folder,
   SearchResultArtist,
@@ -92,6 +93,7 @@ export function HomeView({
             onSelect={onSelectSearchResult}
             onSelectArtist={onSelectArtistResult}
           />
+          <InstallAppBanner />
         </div>
 
         {!searchQuery && (
