@@ -13,7 +13,11 @@ const authClientForUi = authClient as unknown as Parameters<
 
 export function NeonAuthProvider({ children }: { children: ReactNode }) {
   return (
-    <NeonAuthUIProvider emailOTP authClient={authClientForUi}>
+    <NeonAuthUIProvider
+      emailOTP
+      social={{ providers: ["google"] }}
+      authClient={authClientForUi}
+    >
       {children}
     </NeonAuthUIProvider>
   );
