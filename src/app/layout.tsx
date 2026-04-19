@@ -22,7 +22,7 @@ const spaceMono = Space_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_BASE_URL ?? "https://cifrashub.app",
+    process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.cifrashub.com.br",
   ),
   title: {
     default: "CifrasHub",
