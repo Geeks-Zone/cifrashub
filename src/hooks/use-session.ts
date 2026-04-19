@@ -37,12 +37,18 @@ export function useSession() {
   };
 }
 
-export function signIn(provider: "google"): void {
-  void authClient.signIn.social({
-    provider,
-    callbackURL:
-      typeof window !== "undefined" ? window.location.href : "/",
-  });
+export async function signIn(provider: "google"): Promise<void> {
+  try {
+    await authClient.signIn.social({
+      provider,
+      callbackURL:
+        typeof window !== "undefined" ? window.location.href : "/",
+    });
+  } catch {
+    if (typeof window !== "undefined") {
+      window.location.href = "/auth/sign-in";
+    }
+  }
 }
 
 export function signOut(options?: { callbackUrl?: string }): void {

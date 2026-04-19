@@ -16,17 +16,18 @@ export function LoginButton({ className, compact }: LoginButtonProps) {
     return (
       <Button
         type="button"
-        variant="ghost"
-        size="icon"
+        variant="outline"
+        size="sm"
         className={cn(
-          "size-9 shrink-0 rounded-full bg-muted/60 text-muted-foreground ring-1 ring-border hover:bg-muted hover:text-foreground",
+          "h-9 shrink-0 rounded-full px-3 text-foreground",
           className,
         )}
         title="Entrar com Google"
         aria-label="Entrar com Google"
-        onClick={() => signIn("google")}
+        onClick={() => void signIn("google")}
       >
-        <CircleUser className="size-4" strokeWidth={2} />
+        <CircleUser className="mr-1.5 size-4" strokeWidth={2} />
+        Entrar
       </Button>
     );
   }
@@ -37,7 +38,7 @@ export function LoginButton({ className, compact }: LoginButtonProps) {
       variant="outline"
       size="sm"
       className={cn("rounded-full", className)}
-      onClick={() => signIn("google")}
+      onClick={() => void signIn("google")}
     >
       <CircleUser className="mr-2 size-4" strokeWidth={2} />
       Entrar com Google
