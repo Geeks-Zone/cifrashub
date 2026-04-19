@@ -24,7 +24,14 @@ export function LoginButton({ className, compact }: LoginButtonProps) {
         )}
         title="Entrar com Google"
         aria-label="Entrar com Google"
-        onClick={() => void signIn("google")}
+        onClick={() =>
+          void signIn("google").catch((error) => {
+            console.error(
+              "Failed to initiate Google social login. Please try again or contact support if the issue persists.",
+              error,
+            );
+          })
+        }
       >
         <CircleUser className="mr-1.5 size-4" strokeWidth={2} />
         Entrar
@@ -38,7 +45,14 @@ export function LoginButton({ className, compact }: LoginButtonProps) {
       variant="outline"
       size="sm"
       className={cn("rounded-full", className)}
-      onClick={() => void signIn("google")}
+      onClick={() =>
+        void signIn("google").catch((error) => {
+          console.error(
+            "Failed to initiate Google social login. Please try again or contact support if the issue persists.",
+            error,
+          );
+        })
+      }
     >
       <CircleUser className="mr-2 size-4" strokeWidth={2} />
       Entrar com Google

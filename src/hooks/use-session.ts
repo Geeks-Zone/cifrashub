@@ -37,13 +37,11 @@ export function useSession() {
   };
 }
 
-export function signIn(provider: "google"): void {
-  void authClient.signIn.social({
+export function signIn(provider: "google"): Promise<void> {
+  return authClient.signIn.social({
     provider,
     callbackURL:
       typeof window !== "undefined" ? window.location.href : "/",
-  }).catch((error) => {
-    console.error("Failed to initiate Google social login.", error);
   });
 }
 
