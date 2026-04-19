@@ -37,12 +37,22 @@ export function useSession() {
   };
 }
 
-export function signIn(provider: "google"): void {
-  void authClient.signIn.social({
-    provider,
-    callbackURL:
-      typeof window !== "undefined" ? window.location.href : "/",
-  });
+export async function signIn(provider: "google"): Promise<void> {
+  try {
+    await authClient.signIn.social({
+      provider,
+      callbackURL:
+        typeof window !== "undefined" ? window.location.href : "/",
+    });
+  } catch (error) {
+    console.error(
+      "Failed to initiate Google social login. Please try again or contact support if the issue persists.",
+      error,
+    );
+    if (typeof window !== "undefined") {
+      window.location.href = "/auth/sign-in?error=social_login_start_failed";
+    }
+  }
 }
 
 export function signOut(options?: { callbackUrl?: string }): void {
