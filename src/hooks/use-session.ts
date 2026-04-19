@@ -43,7 +43,7 @@ export function signIn(
   return authClient.signIn.social({
     provider,
     callbackURL:
-      typeof window !== "undefined" ? window.location.href : "/",
+      typeof window !== "undefined" ? window.location.origin : "/",
   });
 }
 
