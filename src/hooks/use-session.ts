@@ -42,6 +42,8 @@ export function signIn(provider: "google"): void {
     provider,
     callbackURL:
       typeof window !== "undefined" ? window.location.href : "/",
+  }).catch((error) => {
+    console.error("Failed to initiate Google social login.", error);
   });
 }
 
