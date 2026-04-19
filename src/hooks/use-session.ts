@@ -45,9 +45,12 @@ export async function signIn(provider: "google"): Promise<void> {
         typeof window !== "undefined" ? window.location.href : "/",
     });
   } catch (error) {
-    console.error("Failed to initiate Google social login.", error);
+    console.error(
+      "Failed to initiate Google social login. Please try again or contact support if the issue persists.",
+      error,
+    );
     if (typeof window !== "undefined") {
-      window.location.href = "/auth/sign-in";
+      window.location.href = "/auth/sign-in?error=social_login_start_failed";
     }
   }
 }
