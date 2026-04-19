@@ -1,11 +1,13 @@
 import type { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
+  const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || "https://cifrashub.app").replace(/\/+$/, "");
+
   return {
     rules: {
       userAgent: "*",
       allow: "/",
     },
-    sitemap: "https://www.cifrashub.com.br/sitemap.xml",
+    sitemap: `${baseUrl}/sitemap.xml`,
   };
 }
