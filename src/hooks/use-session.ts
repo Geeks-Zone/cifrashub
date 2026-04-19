@@ -44,7 +44,8 @@ export async function signIn(provider: "google"): Promise<void> {
       callbackURL:
         typeof window !== "undefined" ? window.location.href : "/",
     });
-  } catch {
+  } catch (error) {
+    console.error("Falha ao iniciar login social com Google.", error);
     if (typeof window !== "undefined") {
       window.location.href = "/auth/sign-in";
     }
