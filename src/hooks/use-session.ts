@@ -37,7 +37,9 @@ export function useSession() {
   };
 }
 
-export function signIn(provider: "google") {
+export function signIn(
+  provider: "google",
+): ReturnType<typeof authClient.signIn.social> {
   return authClient.signIn.social({
     provider,
     callbackURL:

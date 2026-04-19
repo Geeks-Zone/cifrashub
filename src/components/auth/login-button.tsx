@@ -13,7 +13,7 @@ type LoginButtonProps = {
 };
 
 function handleGoogleSignIn(): void {
-  void signIn("google").catch((error) => {
+  void signIn("google").catch((error: unknown) => {
     toast.error(
       "Não foi possível iniciar o login com Google. Tente novamente.",
     );
