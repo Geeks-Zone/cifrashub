@@ -37,7 +37,7 @@ export function useSession() {
   };
 }
 
-export function signIn(provider: "google"): Promise<void> {
+export function signIn(provider: "google") {
   return authClient.signIn.social({
     provider,
     callbackURL:

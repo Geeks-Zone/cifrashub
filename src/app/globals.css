@@ -76,6 +76,8 @@
 }
 
 :root {
+  --font-space-grotesk: "Segoe UI", "Inter", "Noto Sans", sans-serif;
+  --font-space-mono: "SFMono-Regular", "Cascadia Mono", "Consolas", monospace;
   --background: oklch(0.9813 0.0100 238.5069);
   --foreground: oklch(0.1807 0.0207 239.8394);
   --card: oklch(1.0000 0 0);
