@@ -28,6 +28,9 @@ function UserMenu({ className, triggerClassName }: UserMenuProps) {
     return null;
   }
 
+  const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || window.location.origin)
+    .replace(/\/+$/, "");
+
   const initials =
     user.name
       ?.split(/\s+/)
@@ -66,7 +69,7 @@ function UserMenu({ className, triggerClassName }: UserMenuProps) {
           <DropdownMenuSeparator />
           <DropdownMenuItem
             className="gap-2"
-            onClick={() => signOut({ callbackUrl: window.location.origin })}
+            onClick={() => signOut({ callbackUrl: baseUrl })}
           >
             <LogOut className="size-4" />
             Sair

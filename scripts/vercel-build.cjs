@@ -14,8 +14,26 @@ if (process.env.VERCEL_ENV === "production") {
         "Required variables:\n" +
         "  - DATABASE_URL\n" +
         "  - DATABASE_URL_UNPOOLED\n" +
-        "  - AUTH_COOKIE_SECRET\n" +
-        "  - NEON_AUTH_URL\n",
+        "  - NEON_AUTH_COOKIE_SECRET (or AUTH_COOKIE_SECRET)\n" +
+        "  - NEON_AUTH_BASE_URL (or NEON_AUTH_URL)\n",
+    );
+    process.exit(1);
+  }
+
+  const neonAuthBaseUrl = process.env.NEON_AUTH_BASE_URL || process.env.NEON_AUTH_URL;
+  const neonAuthCookieSecret =
+    process.env.NEON_AUTH_COOKIE_SECRET || process.env.AUTH_COOKIE_SECRET;
+
+  const missing = [];
+  if (!neonAuthBaseUrl) missing.push("NEON_AUTH_BASE_URL (ou NEON_AUTH_URL)");
+  if (!neonAuthCookieSecret)
+    missing.push("NEON_AUTH_COOKIE_SECRET (ou AUTH_COOKIE_SECRET)");
+
+  if (missing.length > 0) {
+    console.error(
+      `\n[vercel-build] ERROR: Variáveis de autenticação ausentes:\n` +
+        missing.map((v) => `  - ${v}\n`).join("") +
+        "\nConfigure em Vercel → Settings → Environment Variables antes do deploy.\n",
     );
     process.exit(1);
   }
