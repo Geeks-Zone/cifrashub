@@ -1,6 +1,6 @@
 # CifrasHub
 
-Visualizador de cifras para qualquer instrumentista — violão, guitarra, baixo, teclado e mais — com pastas, transposição, metrônomo, afinador e ferramentas de palco.
+Visualizador de cifras para qualquer instrumentista — violão, guitarra, baixo, teclado e mais — com pastas, transposição, metrônomo e ferramentas de palco.
 
 [English](#english) · [Português](#português)
 
@@ -19,7 +19,6 @@ CifrasHub é uma aplicação web open source para músicos que querem organizar 
 - **Transposição** automática com cálculo de capotraste
 - **Setlists** para montar e executar repertórios ao vivo
 - **Metrônomo** integrado com controle de BPM
-- **Afinador** via Web Audio API
 - **Modo palco** — tela limpa otimizada para apresentações
 - **Compartilhamento público** via link
 - **PWA** — funciona offline após a primeira visita
@@ -117,7 +116,6 @@ CifrasHub is an open source web application for musicians to organize and view c
 - **Transposition** with automatic capo calculation
 - **Setlists** to build and perform live repertoires
 - **Built-in metronome** with BPM control
-- **Tuner** via Web Audio API
 - **Stage mode** — clean screen optimized for performances
 - **Public sharing** via link
 - **PWA** — works offline after the first visit
