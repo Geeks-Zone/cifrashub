@@ -93,8 +93,8 @@ Acesse [http://localhost:3000](http://localhost:3000).
 2. Em **Settings → Environment Variables**, configure as variáveis do `.env.example` para os ambientes **Production**, **Preview** e **Development**:
    - `DATABASE_URL` — connection string pooled do Neon
    - `DATABASE_URL_UNPOOLED` — connection string direct do Neon (necessária para `drizzle-kit push`)
-   - `AUTH_COOKIE_SECRET` — gerado com `openssl rand -base64 32`
-   - `NEON_AUTH_URL` — URL do seu projeto Neon Auth
+   - `NEON_AUTH_COOKIE_SECRET` — gerado com `openssl rand -base64 32` (aceita `AUTH_COOKIE_SECRET` como fallback)
+   - `NEON_AUTH_BASE_URL` — URL do seu projeto Neon Auth (aceita `NEON_AUTH_URL` como fallback)
    - `NEXT_PUBLIC_BASE_URL` — domínio público (ex.: `https://www.cifrashub.com.br`)
 3. O comando de build é `npm run vercel-build`, que em Production aplica migrações SQL e faz `drizzle-kit push` antes do `next build`. Em Preview, só roda o `next build`.
 4. Clique em **Deploy**.
