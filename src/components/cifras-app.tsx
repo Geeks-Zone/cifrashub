@@ -118,6 +118,43 @@ type ActiveView = "home" | "folder" | "song" | "artist" | "setlist";
 /** Para onde o botão Voltar da cifra retorna (ex.: lista do artista). */
 type SongReturnTarget = "home" | "folder" | "artist" | "setlist";
 
+const CLOUD_SYNC_POLL_MS = 15_000;
+
+function cloudSyncSignalKey(userId: string): string {
+  return `cifrashub_cloud_signal_${userId}`;
+}
+
+/** Migra setlists do visitante para a nuvem; atualiza localStorage a cada setlist concluída. */
+async function migrateGuestSetlistsProgressive(
+  guest: LocalSetlistStored[],
+  save: (next: LocalSetlistStored[]) => void,
+) {
+  let remaining = [...guest];
+  for (const sl of guest) {
+    try {
+      const { setlist } = await cloudCreateSetlist(
+        sl.title,
+        sl.description ?? null,
+      );
+      for (const it of sl.items) {
+        try {
+          await cloudAddSetlistItem(
+            setlist.id,
+            it.arrangementId,
+            it.notes ?? null,
+          );
+        } catch {
+          /* arranjo não está na biblioteca */
+        }
+      }
+      remaining = remaining.filter((x) => x.id !== sl.id);
+      save(remaining);
+    } catch {
+      break;
+    }
+  }
+}
+
 export function CifrasApp() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -125,6 +162,8 @@ export function CifrasApp() {
 
   const { data: session, status } = useSession();
   const isCloud = status === "authenticated";
+  const userId = session?.user?.id ?? null;
+  const syncSignalKey = userId ? cloudSyncSignalKey(userId) : null;
 
   const [activeView, setActiveView] = useState<ActiveView>("home");
   const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
@@ -213,6 +252,75 @@ export function CifrasApp() {
     spacingOffset,
   ]);
 
+  const applyCloudLibrarySnapshot = useCallback(
+    (payload: { folders: Folder[]; recentes: StoredSong[] }) => {
+      setFolders(
+        payload.folders.length > 0 ? payload.folders : DEFAULT_FOLDERS,
+      );
+      setRecentes(payload.recentes);
+    },
+    [],
+  );
+
+  const notifyCloudMutation = useCallback(() => {
+    if (!syncSignalKey || typeof window === "undefined") return;
+    try {
+      localStorage.setItem(syncSignalKey, `${Date.now()}`);
+    } catch {
+      /* noop */
+    }
+  }, [syncSignalKey]);
+
+  const refreshCloudState = useCallback(
+    async (options?: { includeActiveSetlist?: boolean }) => {
+      if (!isCloud) return;
+
+      const [libraryResult, setlistsResult] = await Promise.allSettled([
+        cloudFetchLibrary(),
+        cloudFetchSetlists(),
+      ]);
+
+      if (libraryResult.status === "fulfilled") {
+        applyCloudLibrarySnapshot(libraryResult.value);
+      }
+
+      let refreshedSetlists: SetlistSummary[] | null = null;
+      if (setlistsResult.status === "fulfilled") {
+        refreshedSetlists = setlistsResult.value.setlists;
+        setSetlistSummaries(refreshedSetlists);
+      }
+
+      if (
+        !options?.includeActiveSetlist ||
+        activeView !== "setlist" ||
+        !setlistDetail?.id
+      ) {
+        return;
+      }
+
+      if (
+        refreshedSetlists &&
+        !refreshedSetlists.some((s) => s.id === setlistDetail.id)
+      ) {
+        setSetlistDetail(null);
+        return;
+      }
+
+      try {
+        const detail = await cloudGetSetlist(setlistDetail.id);
+        setSetlistDetail(detail);
+      } catch {
+        /* noop */
+      }
+    },
+    [
+      isCloud,
+      applyCloudLibrarySnapshot,
+      activeView,
+      setlistDetail?.id,
+    ],
+  );
+
   /** Carrega localStorage (visitante) ou nuvem / sync na primeira vez (logado). */
   useEffect(() => {
     if (status === "loading") return;
@@ -231,7 +339,6 @@ export function CifrasApp() {
       return;
     }
 
-    const userId = session?.user?.id;
     if (!userId) return;
 
     let cancelled = false;
@@ -251,8 +358,13 @@ export function CifrasApp() {
             recentes: localR ?? [],
           });
           if (cancelled) return;
-          setFolders(merged.folders.length > 0 ? merged.folders : DEFAULT_FOLDERS);
-          setRecentes(merged.recentes);
+          applyCloudLibrarySnapshot(merged);
+          const guestSetlists = loadLocalSetlists();
+          if (guestSetlists?.length) {
+            await migrateGuestSetlistsProgressive(guestSetlists, (next) => {
+              saveLocalSetlists(next);
+            });
+          }
           localStorage.setItem(key, "1");
           try {
             const sl = await cloudFetchSetlists();
@@ -263,8 +375,11 @@ export function CifrasApp() {
         } else {
           const lib = await cloudFetchLibrary();
           if (cancelled) return;
-          setFolders(lib.folders.length > 0 ? lib.folders : DEFAULT_FOLDERS);
-          setRecentes(lib.recentes);
+          applyCloudLibrarySnapshot(lib);
+          const guestRetry = loadLocalSetlists();
+          if (guestRetry?.length) {
+            await migrateGuestSetlistsProgressive(guestRetry, saveLocalSetlists);
+          }
           try {
             const sl = await cloudFetchSetlists();
             if (!cancelled) setSetlistSummaries(sl.setlists);
@@ -276,8 +391,11 @@ export function CifrasApp() {
         try {
           const lib = await cloudFetchLibrary();
           if (cancelled) return;
-          setFolders(lib.folders.length > 0 ? lib.folders : DEFAULT_FOLDERS);
-          setRecentes(lib.recentes);
+          applyCloudLibrarySnapshot(lib);
+          const guestRetry = loadLocalSetlists();
+          if (guestRetry?.length) {
+            await migrateGuestSetlistsProgressive(guestRetry, saveLocalSetlists);
+          }
           try {
             const sl = await cloudFetchSetlists();
             if (!cancelled) setSetlistSummaries(sl.setlists);
@@ -298,7 +416,42 @@ export function CifrasApp() {
     return () => {
       cancelled = true;
     };
-  }, [status, session?.user?.id]);
+  }, [status, userId, applyCloudLibrarySnapshot]);
+
+  useEffect(() => {
+    if (!isCloud || !userId || !syncSignalKey) return;
+
+    const runRefresh = () => {
+      void refreshCloudState({ includeActiveSetlist: true });
+    };
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        runRefresh();
+      }
+    };
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === syncSignalKey && event.newValue) {
+        runRefresh();
+      }
+    };
+
+    const intervalId = window.setInterval(runRefresh, CLOUD_SYNC_POLL_MS);
+
+    window.addEventListener("focus", runRefresh);
+    window.addEventListener("online", runRefresh);
+    window.addEventListener("storage", handleStorage);
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", runRefresh);
+      window.removeEventListener("online", runRefresh);
+      window.removeEventListener("storage", handleStorage);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [isCloud, userId, syncSignalKey, refreshCloudState]);
 
   useEffect(() => {
     if (zenMode && activeView === "song") {
@@ -318,14 +471,19 @@ export function CifrasApp() {
           ...prev.filter((s) => arrangementKey(s) !== k),
         ].slice(0, 15);
         if (isCloud) {
-          void cloudSaveRecentes(next).catch(() => saveRecentes(next));
+          void cloudSaveRecentes(next)
+            .then(({ recentes: synced }) => {
+              setRecentes(synced);
+              notifyCloudMutation();
+            })
+            .catch(() => saveRecentes(next));
         } else {
           saveRecentes(next);
         }
         return next;
       });
     },
-    [isCloud],
+    [isCloud, notifyCloudMutation],
   );
 
   const removeFromRecentes = useCallback(
@@ -334,24 +492,34 @@ export function CifrasApp() {
       setRecentes((prev) => {
         const next = prev.filter((s) => arrangementKey(s) !== ak);
         if (isCloud) {
-          void cloudSaveRecentes(next).catch(() => saveRecentes(next));
+          void cloudSaveRecentes(next)
+            .then(({ recentes: synced }) => {
+              setRecentes(synced);
+              notifyCloudMutation();
+            })
+            .catch(() => saveRecentes(next));
         } else {
           saveRecentes(next);
         }
         return next;
       });
     },
-    [isCloud],
+    [isCloud, notifyCloudMutation],
   );
 
   const clearAllRecentes = useCallback(() => {
     setRecentes([]);
     if (isCloud) {
-      void cloudClearRecentes().catch(() => saveRecentes([]));
+      void cloudClearRecentes()
+        .then(({ recentes: synced }) => {
+          setRecentes(synced);
+          notifyCloudMutation();
+        })
+        .catch(() => saveRecentes([]));
     } else {
       saveRecentes([]);
     }
-  }, [isCloud]);
+  }, [isCloud, notifyCloudMutation]);
 
   useAutoScroll(autoScroll && activeView === "song", scrollSpeed);
 
@@ -422,6 +590,7 @@ export function CifrasApp() {
             newSong,
           );
           setFolders(next);
+          notifyCloudMutation();
         } else {
           setFolders((prev) => {
             const updated = prev.map((f) => {
@@ -448,7 +617,7 @@ export function CifrasApp() {
         setFolderAddPendingKey(null);
       }
     },
-    [activeFolderId, isCloud],
+    [activeFolderId, isCloud, notifyCloudMutation],
   );
 
   const handleOpenVideo = useCallback(() => {
@@ -488,6 +657,7 @@ export function CifrasApp() {
               ck,
             );
             setFolders(next);
+            notifyCloudMutation();
           } else {
             const built = buildCurrentStoredSong();
             const toSave: StoredSong = built ?? {
@@ -501,6 +671,7 @@ export function CifrasApp() {
               toSave,
             );
             setFolders(next);
+            notifyCloudMutation();
           }
         } catch {
           /* falha de rede: mantém estado */
@@ -536,7 +707,16 @@ export function CifrasApp() {
         return updated;
       });
     },
-    [currentSong, songData, tone, capo, isCloud, folders, buildCurrentStoredSong],
+    [
+      currentSong,
+      songData,
+      tone,
+      capo,
+      isCloud,
+      folders,
+      buildCurrentStoredSong,
+      notifyCloudMutation,
+    ],
   );
 
   const doCreateFolder = useCallback(
@@ -546,6 +726,7 @@ export function CifrasApp() {
         try {
           const { folders: next } = await cloudCreateFolder(newFolderName.trim());
           setFolders(next);
+          notifyCloudMutation();
         } catch {
           /* noop */
         }
@@ -564,7 +745,7 @@ export function CifrasApp() {
       setNewFolderName("");
       if (resetCreating) setIsCreatingFolder(false);
     },
-    [newFolderName, isCloud],
+    [newFolderName, isCloud, notifyCloudMutation],
   );
 
   const handleCreateFolder = useCallback(
@@ -586,6 +767,7 @@ export function CifrasApp() {
         try {
           const { folders: next } = await cloudDeleteFolder(folderId);
           setFolders(next);
+          notifyCloudMutation();
         } catch {
           /* noop */
         }
@@ -598,7 +780,7 @@ export function CifrasApp() {
       }
       setActiveView("home");
     },
-    [folders, isCloud],
+    [folders, isCloud, notifyCloudMutation],
   );
 
   const handleRemoveSongFromFolder = useCallback(
@@ -612,6 +794,7 @@ export function CifrasApp() {
             ak,
           );
           setFolders(next);
+          notifyCloudMutation();
         } catch {
           /* noop */
         }
@@ -627,7 +810,7 @@ export function CifrasApp() {
         return next;
       });
     },
-    [activeFolderId, isCloud],
+    [activeFolderId, isCloud, notifyCloudMutation],
   );
 
   const persistGuestSetlists = useCallback((next: LocalSetlistStored[]) => {
@@ -667,6 +850,7 @@ export function CifrasApp() {
         try {
           const { setlists } = await cloudCreateSetlist(title);
           setSetlistSummaries(setlists);
+          notifyCloudMutation();
         } catch {
           /* noop */
         }
@@ -679,7 +863,7 @@ export function CifrasApp() {
       const entry: LocalSetlistStored = { id, title, items: [] };
       persistGuestSetlists([...localSetlistsRaw, entry]);
     },
-    [isCloud, localSetlistsRaw, persistGuestSetlists],
+    [isCloud, localSetlistsRaw, persistGuestSetlists, notifyCloudMutation],
   );
 
   const handleDeleteSetlist = useCallback(
@@ -688,6 +872,7 @@ export function CifrasApp() {
         try {
           const { setlists } = await cloudDeleteSetlist(id);
           setSetlistSummaries(setlists);
+          notifyCloudMutation();
         } catch {
           /* noop */
         }
@@ -695,7 +880,7 @@ export function CifrasApp() {
       }
       persistGuestSetlists(localSetlistsRaw.filter((s) => s.id !== id));
     },
-    [isCloud, localSetlistsRaw, persistGuestSetlists],
+    [isCloud, localSetlistsRaw, persistGuestSetlists, notifyCloudMutation],
   );
 
   const handleAddSetlistItem = useCallback(
@@ -705,6 +890,10 @@ export function CifrasApp() {
         try {
           const d = await cloudAddSetlistItem(setlistDetail.id, arrangementId);
           setSetlistDetail(d);
+          notifyCloudMutation();
+          void cloudFetchSetlists()
+            .then(({ setlists }) => setSetlistSummaries(setlists))
+            .catch(() => {});
         } catch {
           /* noop */
         }
@@ -735,6 +924,7 @@ export function CifrasApp() {
       folders,
       recentes,
       persistGuestSetlists,
+      notifyCloudMutation,
     ],
   );
 
@@ -745,6 +935,10 @@ export function CifrasApp() {
         try {
           const d = await cloudRemoveSetlistItem(setlistDetail.id, itemId);
           setSetlistDetail(d);
+          notifyCloudMutation();
+          void cloudFetchSetlists()
+            .then(({ setlists }) => setSetlistSummaries(setlists))
+            .catch(() => {});
         } catch {
           /* noop */
         }
@@ -768,6 +962,7 @@ export function CifrasApp() {
       folders,
       recentes,
       persistGuestSetlists,
+      notifyCloudMutation,
     ],
   );
 
@@ -790,6 +985,10 @@ export function CifrasApp() {
             swapped.map((i) => i.itemId),
           );
           setSetlistDetail(d);
+          notifyCloudMutation();
+          void cloudFetchSetlists()
+            .then(({ setlists }) => setSetlistSummaries(setlists))
+            .catch(() => {});
         } catch {
           /* noop */
         }
@@ -816,6 +1015,7 @@ export function CifrasApp() {
       folders,
       recentes,
       persistGuestSetlists,
+      notifyCloudMutation,
     ],
   );
 
@@ -930,7 +1130,12 @@ export function CifrasApp() {
         const next = [...prev];
         next[idx] = patchSong(next[idx]!);
         if (isCloud) {
-          void cloudSaveRecentes(next).catch(() => saveRecentes(next));
+          void cloudSaveRecentes(next)
+            .then(({ recentes: synced }) => {
+              setRecentes(synced);
+              notifyCloudMutation();
+            })
+            .catch(() => saveRecentes(next));
         } else {
           saveRecentes(next);
         }
@@ -971,6 +1176,7 @@ export function CifrasApp() {
           }
           setFolders(merged);
           saveFolders(merged);
+          notifyCloudMutation();
         })();
 
         return next;
@@ -991,6 +1197,7 @@ export function CifrasApp() {
     columns,
     spacingOffset,
     isCloud,
+    notifyCloudMutation,
   ]);
 
   const loadSong = useCallback(
@@ -1240,7 +1447,12 @@ export function CifrasApp() {
         );
         if (JSON.stringify(prev) !== JSON.stringify(next)) {
           if (status === "authenticated") {
-            void cloudSaveRecentes(next).catch(() => saveRecentes(next));
+            void cloudSaveRecentes(next)
+              .then(({ recentes: synced }) => {
+                setRecentes(synced);
+                notifyCloudMutation();
+              })
+              .catch(() => saveRecentes(next));
           } else {
             saveRecentes(next);
           }
@@ -1267,7 +1479,9 @@ export function CifrasApp() {
           saveFolders(next);
           if (status === "authenticated") {
             toUpdateFolderIds.forEach((fid) => {
-              void cloudAddSongToFolder(fid, baseStoredSong).catch(() => {});
+              void cloudAddSongToFolder(fid, baseStoredSong)
+                .then(() => notifyCloudMutation())
+                .catch(() => {});
             });
           }
         }
@@ -1279,7 +1493,7 @@ export function CifrasApp() {
     }
     clearEditSnapshot();
     router.replace("/");
-  }, [editReturn, router, status]);
+  }, [editReturn, router, status, notifyCloudMutation]);
 
   const homeProps = {
     searchQuery,

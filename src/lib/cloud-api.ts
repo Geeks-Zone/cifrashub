@@ -109,7 +109,10 @@ export async function cloudFetchSetlists(): Promise<{ setlists: SetlistSummary[]
 export async function cloudCreateSetlist(
   title: string,
   description?: string | null,
-): Promise<{ setlists: SetlistSummary[] }> {
+): Promise<{
+  setlist: { id: string };
+  setlists: SetlistSummary[];
+}> {
   return apiJson("/api/setlists", {
     method: "POST",
     body: JSON.stringify({ title, description }),

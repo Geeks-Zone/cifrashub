@@ -96,6 +96,7 @@ Acesse [http://localhost:3000](http://localhost:3000).
    - `NEON_AUTH_COOKIE_SECRET` — gerado com `openssl rand -base64 32` (aceita `AUTH_COOKIE_SECRET` como fallback)
    - `NEON_AUTH_BASE_URL` — URL do seu projeto Neon Auth (aceita `NEON_AUTH_URL` como fallback)
    - `NEXT_PUBLIC_BASE_URL` — domínio público (ex.: `https://www.cifrashub.com.br`)
+   - Em produção, use `https://www.cifrashub.com.br` como domínio canônico e mantenha `https://cifrashub.com.br` apenas como redirecionamento para `www`
 3. O comando de build é `npm run vercel-build`, que em Production aplica migrações SQL e faz `drizzle-kit push` antes do `next build`. Em Preview, só roda o `next build`.
 4. Clique em **Deploy**.
 

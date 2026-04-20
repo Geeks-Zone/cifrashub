@@ -1,20 +1,23 @@
 /**
- * Roda a migração SQL via @neondatabase/serverless (disponível no build da Vercel).
- * Idempotente — seguro para re-executar em todo deploy.
+ * Runs the SQL migration via @neondatabase/serverless.
+ * Idempotent and safe to rerun on every deploy.
  *
- * Uso: node scripts/migrate.cjs
- * Requer: DATABASE_URL ou DATABASE_URL_UNPOOLED no env.
+ * Usage: node scripts/migrate.cjs
+ * Requires: DATABASE_URL or DATABASE_URL_UNPOOLED in env.
  */
 /* eslint-disable @typescript-eslint/no-require-imports */
 const fs = require("fs");
 const path = require("path");
+const dotenv = require("dotenv");
 const { neon } = require("@neondatabase/serverless");
 
+dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
+dotenv.config();
+
 async function main() {
-  const url =
-    process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL;
+  const url = process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL;
   if (!url || url.includes("placeholder")) {
-    console.log("[migrate] Sem DATABASE_URL — pulando migração.");
+    console.log("[migrate] Missing DATABASE_URL, skipping migration.");
     return;
   }
 
@@ -23,11 +26,15 @@ async function main() {
     "utf-8",
   );
 
-  // Separa em statements individuais (ignora linhas vazias e comentários)
-  const statements = sqlText
+  const normalizedSql = sqlText
+    .split(/\r?\n/)
+    .filter((line) => !line.trim().startsWith("--"))
+    .join("\n");
+
+  const statements = normalizedSql
     .split(/;\s*$/m)
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0 && !s.startsWith("--"));
+    .map((statement) => statement.trim())
+    .filter((statement) => statement.length > 0);
 
   const sql = neon(url);
 
@@ -35,24 +42,23 @@ async function main() {
     try {
       await sql.query(stmt);
     } catch (err) {
-      // Erros de "already exists" / "does not exist" são esperados (idempotência)
       const msg = String(err);
       if (
         msg.includes("already exists") ||
         msg.includes("does not exist") ||
         msg.includes("duplicate key")
       ) {
-        console.log(`[migrate] OK (esperado): ${msg.slice(0, 120)}`);
+        console.log(`[migrate] OK (expected): ${msg.slice(0, 120)}`);
       } else {
         throw err;
       }
     }
   }
 
-  console.log("[migrate] Migração concluída com sucesso.");
+  console.log("[migrate] Migration completed successfully.");
 }
 
 main().catch((err) => {
-  console.error("[migrate] ERRO:", err);
+  console.error("[migrate] ERROR:", err);
   process.exit(1);
 });

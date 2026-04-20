@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
+import { Space_Grotesk, Space_Mono } from "next/font/google";
 import { NeonAuthProvider } from "@/components/providers/neon-auth-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "sonner";
@@ -6,6 +8,18 @@ import { PWARegister } from "@/components/pwa-register";
 import { SiteFooter } from "@/components/site-footer";
 import "./globals.css";
 
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
+  subsets: ["latin", "latin-ext"],
+  display: "swap",
+});
+
+const spaceMono = Space_Mono({
+  variable: "--font-space-mono",
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -16,7 +30,7 @@ export const metadata: Metadata = {
     template: "%s — CifrasHub",
   },
   description:
-    "Visualizador de cifras com pastas, transposição, metrônomo, afinador e ferramentas de palco.",
+    "Visualizador de cifras com pastas, transposição, metrônomo e ferramentas de palco.",
   keywords: ["cifras", "acordes", "cifras de música", "transposição", "violao", "guitarra", "baixo", "teclado"],
   authors: [{ name: "CifrasHub" }],
   creator: "CifrasHub",
@@ -74,7 +88,7 @@ export default function RootLayout({
     <html
       lang="pt-BR"
       suppressHydrationWarning
-      className="dark h-full antialiased"
+      className={`dark ${spaceGrotesk.variable} ${spaceMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col font-sans">
         <NeonAuthProvider>
@@ -91,6 +105,7 @@ export default function RootLayout({
             closeButton
             toastOptions={{ classNames: { toast: "font-sans" } }}
           />
+          <Analytics />
         </NeonAuthProvider>
       </body>
     </html>
