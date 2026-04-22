@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "sonner";
 import { PWARegister } from "@/components/pwa-register";
 import { SiteFooter } from "@/components/site-footer";
+import { SyncProvider } from "@/components/providers/sync-provider";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -92,20 +93,22 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col font-sans">
         <NeonAuthProvider>
-          <PWARegister />
-          <TooltipProvider>
-            <div className="flex min-h-full flex-1 flex-col">
-              <div className="flex-1">{children}</div>
-              <SiteFooter />
-            </div>
-          </TooltipProvider>
-          <Toaster
-            position="bottom-center"
-            richColors
-            closeButton
-            toastOptions={{ classNames: { toast: "font-sans" } }}
-          />
-          <Analytics />
+          <SyncProvider>
+            <PWARegister />
+            <TooltipProvider>
+              <div className="flex min-h-full flex-1 flex-col">
+                <div className="flex-1">{children}</div>
+                <SiteFooter />
+              </div>
+            </TooltipProvider>
+            <Toaster
+              position="bottom-center"
+              richColors
+              closeButton
+              toastOptions={{ classNames: { toast: "font-sans" } }}
+            />
+            <Analytics />
+          </SyncProvider>
         </NeonAuthProvider>
       </body>
     </html>

@@ -1,10 +1,10 @@
 import { Suspense } from "react";
-import { CifrasApp } from "@/components/cifras-app";
+import { HomeView } from "@/components/home/home-view";
 
 export default function Home() {
   return (
     <Suspense fallback={null}>
-      <CifrasApp />
+      <HomeView />
     </Suspense>
   );
 }
