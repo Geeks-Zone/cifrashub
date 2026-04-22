@@ -28,8 +28,11 @@ function UserMenu({ className, triggerClassName }: UserMenuProps) {
     return null;
   }
 
-  const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || window.location.origin)
-    .replace(/\/+$/, "");
+  const baseUrl = (
+    typeof window !== "undefined"
+      ? window.location.origin
+      : (process.env.NEXT_PUBLIC_BASE_URL ?? "/")
+  ).replace(/\/+$/, "");
 
   const initials =
     user.name
