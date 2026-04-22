@@ -50,10 +50,15 @@ export function signIn(
   });
 }
 
-export function signOut(options?: { callbackUrl?: string }): void {
-  void authClient.signOut().then(() => {
+export async function signOut(options?: { callbackUrl?: string }): Promise<void> {
+  try {
+    await authClient.signOut();
     if (options?.callbackUrl && typeof window !== "undefined") {
       window.location.href = options.callbackUrl;
+    } else if (typeof window !== "undefined") {
+      window.location.reload();
     }
-  });
+  } catch (error) {
+    console.error("Sign out failed:", error);
+  }
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { Bookmark, Loader2 } from "lucide-react";
+import { useState } from "react";
 import { AuthHeaderControl } from "@/components/auth/user-menu";
 import { SearchBar } from "./search-bar";
 import { FolderGrid } from "./folder-grid";
@@ -8,63 +9,84 @@ import { RecentList } from "./recent-list";
 import { SetlistsHomeSection } from "@/components/setlist/setlists-home-section";
 import { useSearchDebounced } from "@/hooks/use-search";
 import { InstallAppBanner } from "@/components/install-app-banner";
-import type {
-  Folder,
-  SearchResultArtist,
-  SearchResultSong,
-  SetlistSummary,
-  StoredSong,
-} from "@/lib/types";
+import type { SearchResultArtist, SearchResultSong } from "@/lib/types";
 
-type HomeViewProps = {
-  searchQuery: string;
-  onSearchQueryChange: (q: string) => void;
-  onSelectSearchResult: (res: SearchResultSong) => void;
-  onSelectArtistResult: (artist: SearchResultArtist) => void;
-  folders: Folder[];
-  isCreatingFolder: boolean;
-  newFolderName: string;
-  onNewFolderNameChange: (v: string) => void;
-  onStartCreateFolder: () => void;
-  onCancelCreateFolder: () => void;
-  onSubmitCreateFolder: (e: React.FormEvent) => void;
-  onOpenFolder: (folderId: string) => void;
-  recentes: StoredSong[];
-  onSelectRecent: (song: StoredSong) => void;
-  onRemoveRecent: (song: StoredSong) => void;
-  onClearRecentes: () => void;
-  setlists: SetlistSummary[];
-  onCreateSetlist: (title: string) => void;
-  onOpenSetlist: (id: string) => void;
-  onDeleteSetlist: (id: string) => void;
-  /** True enquanto a biblioteca está sendo carregada do servidor (usuário autenticado). */
-  isLoadingLibrary?: boolean;
-};
+import { useLibraryStore } from "@/store/use-library-store";
+import { useLibraryActions } from "@/hooks/use-library-actions";
+import { useRouter } from "next/navigation";
+import { cloudCreateSetlist, cloudDeleteSetlist } from "@/lib/storage";
 
-export function HomeView({
-  searchQuery,
-  onSearchQueryChange,
-  onSelectSearchResult,
-  onSelectArtistResult,
-  folders,
-  isCreatingFolder,
-  newFolderName,
-  onNewFolderNameChange,
-  onStartCreateFolder,
-  onCancelCreateFolder,
-  onSubmitCreateFolder,
-  onOpenFolder,
-  recentes,
-  onSelectRecent,
-  onRemoveRecent,
-  onClearRecentes,
-  setlists,
-  onCreateSetlist,
-  onOpenSetlist,
-  onDeleteSetlist,
-  isLoadingLibrary = false,
-}: HomeViewProps) {
+export function HomeView() {
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
   const { results, isSearching } = useSearchDebounced(searchQuery);
+
+  const folders = useLibraryStore((s) => s.folders);
+  const setlists = useLibraryStore((s) => s.setlistSummaries);
+  const recentes = useLibraryStore((s) => s.recentes);
+  const libraryLoaded = useLibraryStore((s) => s.libraryLoaded);
+
+  const {
+    doCreateFolder,
+    clearAllRecentes,
+    removeFromRecentes,
+  } = useLibraryActions();
+
+  const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
+
+  const handleStartCreateFolder = () => setIsCreatingFolder(true);
+  const handleCancelCreateFolder = () => {
+    setIsCreatingFolder(false);
+    setNewFolderName("");
+  };
+  const handleSubmitCreateFolder = (e: React.FormEvent) => {
+    e.preventDefault();
+    void doCreateFolder(newFolderName).then(() => {
+      setNewFolderName("");
+      setIsCreatingFolder(false);
+    });
+  };
+
+  const onOpenFolder = (id: string) => {
+    router.push(`/folder/${id}`);
+  };
+
+  const onSelectSearchResult = (res: SearchResultSong) => {
+    // Actually handle it by URL redirect
+    router.push(`/song/${res.artistSlug}-${res.slug}`);
+  };
+
+  const onSelectArtistResult = (res: SearchResultArtist) => {
+    router.push(`/artist/${res.artistSlug}`);
+  };
+
+  const onSelectRecent = (song: import("@/lib/types").StoredSong) => {
+    router.push(`/song/${song.artistSlug}-${song.slug}`);
+  };
+
+  const onCreateSetlist = async (title: string) => {
+    // For now simplistic inline mutation (if you want to move to actions later it's fine)
+    try {
+      if (title.trim()) {
+        await cloudCreateSetlist(title.trim(), null);
+        // refresh will be handled by polling or if we add a mutate method.
+        // But let's leave it simple just router push if needed.
+      }
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const onOpenSetlist = (id: string) => {
+    router.push(`/setlist/${id}`);
+  };
+
+  const onDeleteSetlist = async (id: string) => {
+    try {
+      await cloudDeleteSetlist(id);
+    } catch {}
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-background selection:bg-primary/30">
@@ -87,7 +109,7 @@ export function HomeView({
           </div>
           <SearchBar
             value={searchQuery}
-            onChange={onSearchQueryChange}
+            onChange={setSearchQuery}
             results={results}
             isSearching={isSearching}
             onSelect={onSelectSearchResult}
@@ -98,7 +120,7 @@ export function HomeView({
 
         {!searchQuery && (
           <div className="flex w-full flex-col gap-12 animate-in fade-in fill-mode-both delay-150 duration-700">
-            {isLoadingLibrary ? (
+            {!libraryLoaded ? (
               <div className="flex flex-col items-center gap-4 py-16 text-muted-foreground">
                 <Loader2 className="size-6 animate-spin text-primary" />
                 <p className="text-sm">Carregando biblioteca…</p>
@@ -114,10 +136,10 @@ export function HomeView({
                     folders={folders}
                     isCreatingFolder={isCreatingFolder}
                     newFolderName={newFolderName}
-                    onNewFolderNameChange={onNewFolderNameChange}
-                    onStartCreateFolder={onStartCreateFolder}
-                    onCancelCreateFolder={onCancelCreateFolder}
-                    onSubmitCreateFolder={onSubmitCreateFolder}
+                    onNewFolderNameChange={setNewFolderName}
+                    onStartCreateFolder={handleStartCreateFolder}
+                    onCancelCreateFolder={handleCancelCreateFolder}
+                    onSubmitCreateFolder={handleSubmitCreateFolder}
                     onOpenFolder={onOpenFolder}
                   />
                 </section>
@@ -130,8 +152,8 @@ export function HomeView({
                 <RecentList
                   recentes={recentes}
                   onSelect={onSelectRecent}
-                  onRemove={onRemoveRecent}
-                  onClearAll={onClearRecentes}
+                  onRemove={removeFromRecentes}
+                  onClearAll={clearAllRecentes}
                 />
               </>
             )}

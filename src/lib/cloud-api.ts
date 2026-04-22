@@ -5,27 +5,54 @@ import type {
   StoredSong,
 } from "./types";
 
+const pendingRequests = new Map<string, Promise<unknown>>();
+
 async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(path, {
-    ...init,
-    credentials: "include",
-    cache: "no-store",
-    headers: {
-      "Content-Type": "application/json",
-      ...(init?.headers as Record<string, string> | undefined),
-    },
-  });
-  if (!res.ok) {
-    let msg = res.statusText;
-    try {
-      const j = (await res.json()) as { error?: string };
-      if (j.error) msg = j.error;
-    } catch {
-      /* ignore */
-    }
-    throw new Error(msg);
+  const reqKey = `${init?.method || "GET"}:${path}`;
+
+  if ((!init?.method || init.method === "GET") && pendingRequests.has(reqKey)) {
+    return pendingRequests.get(reqKey) as Promise<T>;
   }
-  return res.json() as Promise<T>;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+  const requestPromise = (async () => {
+    try {
+      const res = await fetch(path, {
+        ...init,
+        credentials: "include",
+        cache: "no-store",
+        signal: controller.signal,
+        headers: {
+          "Content-Type": "application/json",
+          ...(init?.headers as Record<string, string> | undefined),
+        },
+      });
+      if (!res.ok) {
+        let msg = res.statusText;
+        try {
+          const j = (await res.json()) as { error?: string };
+          if (j.error) msg = j.error;
+        } catch {
+          /* ignore */
+        }
+        throw new Error(msg);
+      }
+      return res.json() as Promise<T>;
+    } finally {
+      clearTimeout(timeoutId);
+      if (!init?.method || init.method === "GET") {
+        pendingRequests.delete(reqKey);
+      }
+    }
+  })();
+
+  if (!init?.method || init.method === "GET") {
+    pendingRequests.set(reqKey, requestPromise);
+  }
+
+  return requestPromise;
 }
 
 export async function cloudSync(payload: {
@@ -109,7 +136,10 @@ export async function cloudFetchSetlists(): Promise<{ setlists: SetlistSummary[]
 export async function cloudCreateSetlist(
   title: string,
   description?: string | null,
-): Promise<{ setlists: SetlistSummary[] }> {
+): Promise<{
+  setlist: { id: string };
+  setlists: SetlistSummary[];
+}> {
   return apiJson("/api/setlists", {
     method: "POST",
     body: JSON.stringify({ title, description }),

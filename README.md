@@ -1,6 +1,6 @@
 # CifrasHub
 
-Visualizador de cifras para qualquer instrumentista — violão, guitarra, baixo, teclado e mais — com pastas, transposição, metrônomo, afinador e ferramentas de palco.
+Visualizador de cifras para qualquer instrumentista — violão, guitarra, baixo, teclado e mais — com pastas, transposição, metrônomo e ferramentas de palco.
 
 [English](#english) · [Português](#português)
 
@@ -19,7 +19,6 @@ CifrasHub é uma aplicação web open source para músicos que querem organizar 
 - **Transposição** automática com cálculo de capotraste
 - **Setlists** para montar e executar repertórios ao vivo
 - **Metrônomo** integrado com controle de BPM
-- **Afinador** via Web Audio API
 - **Modo palco** — tela limpa otimizada para apresentações
 - **Compartilhamento público** via link
 - **PWA** — funciona offline após a primeira visita
@@ -96,6 +95,7 @@ Acesse [http://localhost:3000](http://localhost:3000).
    - `NEON_AUTH_COOKIE_SECRET` — gerado com `openssl rand -base64 32` (aceita `AUTH_COOKIE_SECRET` como fallback)
    - `NEON_AUTH_BASE_URL` — URL do seu projeto Neon Auth (aceita `NEON_AUTH_URL` como fallback)
    - `NEXT_PUBLIC_BASE_URL` — domínio público (ex.: `https://www.cifrashub.com.br`)
+   - Em produção, use `https://www.cifrashub.com.br` como domínio canônico e mantenha `https://cifrashub.com.br` apenas como redirecionamento para `www`
 3. O comando de build é `npm run vercel-build`, que em Production aplica migrações SQL e faz `drizzle-kit push` antes do `next build`. Em Preview, só roda o `next build`.
 4. Clique em **Deploy**.
 
@@ -116,7 +116,6 @@ CifrasHub is an open source web application for musicians to organize and view c
 - **Transposition** with automatic capo calculation
 - **Setlists** to build and perform live repertoires
 - **Built-in metronome** with BPM control
-- **Tuner** via Web Audio API
 - **Stage mode** — clean screen optimized for performances
 - **Public sharing** via link
 - **PWA** — works offline after the first visit
