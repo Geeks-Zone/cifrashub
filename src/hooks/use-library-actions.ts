@@ -2,10 +2,8 @@ import { useCallback, useState } from "react";
 import { useLibraryStore } from "@/store/use-library-store";
 import { useSession } from "@/hooks/use-session";
 import {
-  cloudAddSongToFolder,
   cloudCreateFolder,
   cloudDeleteFolder,
-  cloudRemoveSongFromFolder,
   cloudSaveRecentes,
   cloudClearRecentes,
   saveFolders,
