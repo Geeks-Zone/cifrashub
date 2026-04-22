@@ -102,13 +102,11 @@ function ExpandButton({
 /** Agrupa o botão principal com o painel flutuante à esquerda (desktop) */
 function ToolbarPopoverGroup({
   open,
-  name,
   setExpanded,
   popoverContent,
   children,
 }: {
   open: boolean;
-  name: string;
   setExpanded: (v: string | null) => void;
   popoverContent?: React.ReactNode;
   children: React.ReactNode;
@@ -189,7 +187,6 @@ export const SongToolbar = memo(function SongToolbar() {
       {/* ── Grupo 1: Tom & Capo ── */}
       <ToolbarPopoverGroup
         open={expanded === "tone"}
-        name="tone"
         setExpanded={setExpanded}
         popoverContent={
           <>
@@ -221,7 +218,6 @@ export const SongToolbar = memo(function SongToolbar() {
 
       <ToolbarPopoverGroup
         open={expanded === "capo"}
-        name="capo"
         setExpanded={setExpanded}
         popoverContent={
           <>
@@ -251,7 +247,6 @@ export const SongToolbar = memo(function SongToolbar() {
       {/* ── Grupo 2: Fonte & Espaçamento ── */}
       <ToolbarPopoverGroup
         open={expanded === "font"}
-        name="font"
         setExpanded={setExpanded}
         popoverContent={
           <>
@@ -268,7 +263,6 @@ export const SongToolbar = memo(function SongToolbar() {
 
       <ToolbarPopoverGroup
         open={expanded === "spacing"}
-        name="spacing"
         setExpanded={setExpanded}
         popoverContent={
           <>
@@ -284,7 +278,6 @@ export const SongToolbar = memo(function SongToolbar() {
 
       <ToolbarPopoverGroup
         open={expanded === "columns"}
-        name="columns"
         setExpanded={setExpanded}
         popoverContent={
           <>
@@ -327,13 +320,11 @@ export const SongToolbar = memo(function SongToolbar() {
 /** Popover que expande à esquerda do botão — versão mobile (bottom-right) */
 function MobilePopoverGroup({
   open,
-  name,
   setExpanded,
   popoverContent,
   children,
 }: {
   open: boolean;
-  name: string;
   setExpanded: (v: string | null) => void;
   popoverContent?: React.ReactNode;
   children: React.ReactNode;
@@ -405,7 +396,6 @@ export const SongMobileToolbar = memo(function SongMobileToolbar() {
       {/* ── Grupo 1: Tom & Capo ── */}
       <MobilePopoverGroup
         open={expanded === "tone"}
-        name="tone"
         setExpanded={setExpanded}
         popoverContent={
           <>
@@ -437,7 +427,6 @@ export const SongMobileToolbar = memo(function SongMobileToolbar() {
 
       <MobilePopoverGroup
         open={expanded === "capo"}
-        name="capo"
         setExpanded={setExpanded}
         popoverContent={
           <>
@@ -467,7 +456,6 @@ export const SongMobileToolbar = memo(function SongMobileToolbar() {
       {/* ── Grupo 2: Fonte & Espaçamento & Colunas ── */}
       <MobilePopoverGroup
         open={expanded === "font"}
-        name="font"
         setExpanded={setExpanded}
         popoverContent={
           <>
@@ -484,7 +472,6 @@ export const SongMobileToolbar = memo(function SongMobileToolbar() {
 
       <MobilePopoverGroup
         open={expanded === "spacing"}
-        name="spacing"
         setExpanded={setExpanded}
         popoverContent={
           <>
@@ -500,7 +487,6 @@ export const SongMobileToolbar = memo(function SongMobileToolbar() {
 
       <MobilePopoverGroup
         open={expanded === "columns"}
-        name="columns"
         setExpanded={setExpanded}
         popoverContent={
           <>
