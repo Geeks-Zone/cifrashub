@@ -40,25 +40,27 @@ export function useSession() {
 export function signIn(
   provider: "google",
 ): ReturnType<typeof authClient.signIn.social> {
-  const baseUrl = (
-    process.env.NEXT_PUBLIC_BASE_URL ??
-    (typeof window !== "undefined" ? window.location.origin : "/")
-  ).replace(/\/+$/, "");
+  const callbackURL =
+    typeof window !== "undefined"
+      ? `${window.location.pathname}${window.location.search}${window.location.hash}` || "/"
+      : "/";
+
   return authClient.signIn.social({
     provider,
-    callbackURL: baseUrl,
+    callbackURL,
   });
 }
 
 export async function signOut(options?: { callbackUrl?: string }): Promise<void> {
   try {
     await authClient.signOut();
+  } catch (error) {
+    console.error("Sign out failed:", error);
+  } finally {
     if (options?.callbackUrl && typeof window !== "undefined") {
-      window.location.href = options.callbackUrl;
+      window.location.replace(options.callbackUrl);
     } else if (typeof window !== "undefined") {
       window.location.reload();
     }
-  } catch (error) {
-    console.error("Sign out failed:", error);
   }
 }

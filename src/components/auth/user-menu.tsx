@@ -25,7 +25,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { signOut, useSession } from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
 import { LoginButton } from "@/components/auth/login-button";
-import { authClient } from "@/lib/auth";
 import { toast } from "sonner";
 
 type UserMenuProps = {
@@ -61,12 +60,16 @@ function UserMenu({ className, triggerClassName }: UserMenuProps) {
   function handleDeleteAccount() {
     startTransition(async () => {
       try {
-        const result = await authClient.deleteUser({ callbackURL: baseUrl });
-        if (result.error) {
-          toast.error(result.error.message ?? "Erro ao excluir conta.");
+        const response = await fetch("/api/account", { method: "DELETE" });
+        const payload = (await response.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+
+        if (!response.ok) {
+          toast.error(payload?.error ?? "Erro ao excluir conta.");
           return;
         }
-        signOut({ callbackUrl: baseUrl });
+        await signOut({ callbackUrl: baseUrl });
       } catch {
         toast.error("Erro ao excluir conta.");
       }
