@@ -49,6 +49,15 @@ export async function ensureDefaultFolder(userId: string) {
 
   const hasDefault = existing.some((f) => f.isDefault);
   if (!hasDefault) {
+    const favoritos = existing.find((f) => f.title === "Favoritos");
+    if (favoritos) {
+      await db
+        .update(userFolders)
+        .set({ isDefault: true, updatedAt: new Date() })
+        .where(eq(userFolders.id, favoritos.id));
+      return;
+    }
+
     const first = [...existing].sort((a, b) => a.position - b.position)[0]!;
     await db
       .update(userFolders)

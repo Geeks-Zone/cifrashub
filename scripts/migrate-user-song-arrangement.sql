@@ -1,12 +1,21 @@
 -- Pre-drizzle migration for arrangement identity, setlists, sharing, and
 -- folder/user-id column alignment. Safe to run repeatedly.
 
+-- Remove FKs legadas para a tabela local "user". A autenticacao atual vem do
+-- Neon Auth, entao essas colunas sao apenas IDs textuais do usuario autenticado.
+ALTER TABLE "user_folder" DROP CONSTRAINT IF EXISTS "user_folder_user_id_user_id_fk";
+ALTER TABLE "user_song" DROP CONSTRAINT IF EXISTS "user_song_user_id_user_id_fk";
+ALTER TABLE "user_setlist" DROP CONSTRAINT IF EXISTS "user_setlist_user_id_user_id_fk";
+ALTER TABLE "share_snapshot" DROP CONSTRAINT IF EXISTS "share_snapshot_created_by_user_id_user_id_fk";
+
 ALTER TABLE "user_song" ADD COLUMN IF NOT EXISTS "arrangement_id" text;
 UPDATE "user_song" SET "arrangement_id" = "id" WHERE "arrangement_id" IS NULL;
 ALTER TABLE "user_song" ALTER COLUMN "arrangement_id" SET NOT NULL;
 
 ALTER TABLE "user_song" ADD COLUMN IF NOT EXISTS "source_artist_slug" text;
 ALTER TABLE "user_song" ADD COLUMN IF NOT EXISTS "source_slug" text;
+ALTER TABLE "user_song" ADD COLUMN IF NOT EXISTS "youtube_id" text;
+ALTER TABLE "user_song" ADD COLUMN IF NOT EXISTS "ui_prefs" jsonb;
 UPDATE "user_song"
 SET
   "source_artist_slug" = COALESCE("source_artist_slug", "artist_slug"),

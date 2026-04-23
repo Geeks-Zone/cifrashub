@@ -11,7 +11,11 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 const fs = require("fs");
 const path = require("path");
+const dotenv = require("dotenv");
 const { neon } = require("@neondatabase/serverless");
+
+dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
+dotenv.config();
 
 const MIGRATION_PHASES = {
   pre: ["migrate-user-song-arrangement.sql"],
@@ -151,7 +155,7 @@ async function runMigrationFile(sql, fileName) {
 async function main() {
   const url = process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL;
   if (!url || url.includes("placeholder")) {
-    console.log("[migrate] DATABASE_URL missing, skipping migrations.");
+    console.log("[migrate] Missing DATABASE_URL, skipping migrations.");
     return;
   }
 

@@ -7,7 +7,7 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
-export type PwaInstallState = {
+type PwaInstallState = {
   /** Android/Chrome: native install prompt is available */
   canPrompt: boolean;
   /** iOS Safari: manual "Add to Home Screen" flow needed */

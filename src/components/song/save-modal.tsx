@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { arrangementKey, currentSongKey } from "@/lib/stored-song-key";
 import type { CurrentSongMeta, Folder as FolderType } from "@/lib/types";
 
 type SaveModalProps = {
@@ -35,6 +36,8 @@ export function SaveModal({
   onToggleSongInFolder,
 }: SaveModalProps) {
   if (!currentSong) return null;
+
+  const currentArrangementKey = currentSongKey(currentSong);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -67,7 +70,7 @@ export function SaveModal({
           <div className="flex flex-col gap-2 p-3">
             {folders.map((folder) => {
               const inFolder = folder.songs.some(
-                (s) => s.id === currentSong.id,
+                (s) => arrangementKey(s) === currentArrangementKey,
               );
               return (
                 <Button
