@@ -139,7 +139,6 @@ async function runMigrationFile(sql, fileName) {
       const msg = String(err);
       if (
         msg.includes("already exists") ||
-        msg.includes("does not exist") ||
         msg.includes("duplicate key")
       ) {
         console.log(`[migrate] OK (expected): ${msg.slice(0, 120)}`);
