@@ -552,7 +552,7 @@ export function CifrasApp() {
       } else {
         const newFolder: Folder = {
           id: Date.now().toString(),
-          name: newFolderName.trim(),
+          title: newFolderName.trim(),
           songs: [],
         };
         setFolders((prev) => {

@@ -50,11 +50,11 @@ export async function cloudFetchLibrary(): Promise<{
 }
 
 export async function cloudCreateFolder(
-  name: string,
+  title: string,
 ): Promise<{ folders: Folder[] }> {
   return apiJson("/api/folders", {
     method: "POST",
-    body: JSON.stringify({ name }),
+    body: JSON.stringify({ title }),
   });
 }
 

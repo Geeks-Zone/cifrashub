@@ -1,6 +1,7 @@
 "use client";
 
-import { LogOut } from "lucide-react";
+import { Trash2, LogOut } from "lucide-react";
+import { useState, useTransition } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,10 +11,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { signOut, useSession } from "@/hooks/use-session";
 import { cn } from "@/lib/utils";
 import { LoginButton } from "@/components/auth/login-button";
+import { authClient } from "@/lib/auth";
+import { toast } from "sonner";
 
 type UserMenuProps = {
   className?: string;
@@ -23,13 +36,17 @@ type UserMenuProps = {
 function UserMenu({ className, triggerClassName }: UserMenuProps) {
   const { data: session } = useSession();
   const user = session?.user;
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pending, startTransition] = useTransition();
 
   if (!user) {
     return null;
   }
 
-  const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || window.location.origin)
-    .replace(/\/+$/, "");
+  const baseUrl = (
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    (typeof window !== "undefined" ? window.location.origin : "/")
+  ).replace(/\/+$/, "");
 
   const initials =
     user.name
@@ -39,6 +56,21 @@ function UserMenu({ className, triggerClassName }: UserMenuProps) {
       .join("")
       .slice(0, 2)
       .toUpperCase() ?? "?";
+
+  function handleDeleteAccount() {
+    startTransition(async () => {
+      try {
+        const result = await authClient.deleteUser({ callbackURL: baseUrl });
+        if (result.error) {
+          toast.error(result.error.message ?? "Erro ao excluir conta.");
+          return;
+        }
+        signOut({ callbackUrl: baseUrl });
+      } catch {
+        toast.error("Erro ao excluir conta.");
+      }
+    });
+  }
 
   return (
     <div className={cn(className)}>
@@ -74,8 +106,39 @@ function UserMenu({ className, triggerClassName }: UserMenuProps) {
             <LogOut className="size-4" />
             Sair
           </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            className="gap-2 text-destructive focus:text-destructive"
+            onClick={() => setConfirmOpen(true)}
+          >
+            <Trash2 className="size-4" />
+            Excluir conta
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir conta?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação é irreversível. Todos os seus dados — pastas, cifras,
+              setlists e compartilhamentos — serão permanentemente excluídos.
+              Você poderá criar uma nova conta depois.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={pending}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={handleDeleteAccount}
+              disabled={pending}
+            >
+              {pending ? "Excluindo…" : "Excluir conta"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

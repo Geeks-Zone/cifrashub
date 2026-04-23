@@ -94,7 +94,7 @@ export function SaveModal({
                           : "font-medium text-foreground/80"
                       }
                     >
-                      {folder.name}
+                      {folder.title}
                     </span>
                   </span>
                   {inFolder && (

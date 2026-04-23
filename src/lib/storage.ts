@@ -42,8 +42,35 @@ function saveJson(key: string, value: unknown): boolean {
   return safeSetItem(key, JSON.stringify(value));
 }
 
+type LegacyFolder = Omit<Folder, "title" | "songs"> & {
+  title?: string;
+  name?: string;
+  songs?: StoredSong[];
+};
+
+function normalizeFolder(folder: LegacyFolder): Folder | null {
+  const title = (folder.title ?? folder.name)?.trim();
+  if (!folder.id || !title) return null;
+  return {
+    id: folder.id,
+    title,
+    songs: Array.isArray(folder.songs) ? folder.songs : [],
+    isDefault: folder.isDefault,
+  };
+}
+
 export function loadFolders(): Folder[] | null {
-  return loadJson<Folder[]>(STORAGE_FOLDERS);
+  const folders = loadJson<LegacyFolder[]>(STORAGE_FOLDERS);
+  if (!folders) return null;
+  if (!Array.isArray(folders)) return null;
+  const hasLegacyShape = folders.some((folder) => !folder.title && folder.name);
+  const normalized = folders
+    .map((folder) => normalizeFolder(folder))
+    .filter((folder): folder is Folder => folder !== null);
+  if (hasLegacyShape || normalized.length !== folders.length) {
+    saveFolders(normalized);
+  }
+  return normalized;
 }
 
 export function saveFolders(folders: Folder[]): boolean {
@@ -67,5 +94,5 @@ export function saveLocalSetlists(setlists: LocalSetlistStored[]): boolean {
 }
 
 export const DEFAULT_FOLDERS: Folder[] = [
-  { id: "default", name: "Favoritos", songs: [], isDefault: true },
+  { id: "default", title: "Favoritos", songs: [], isDefault: true },
 ];

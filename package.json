@@ -41,7 +41,8 @@
   "overrides": {
     "better-auth": "1.6.0",
     "esbuild": "^0.25.4",
-    "fastify": "5.8.4"
+    "fastify": "5.8.5",
+    "uuid": "14.0.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

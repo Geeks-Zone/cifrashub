@@ -49,7 +49,7 @@ export function FolderGrid({
               fillOpacity={0.15}
             />
             <h4 className="mt-1 w-full truncate text-[13px] font-semibold text-foreground">
-              {folder.name}
+              {folder.title}
             </h4>
             <p className="text-[11px] text-muted-foreground">
               {folder.songs.length} cifras

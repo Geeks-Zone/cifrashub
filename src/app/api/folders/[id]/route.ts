@@ -20,20 +20,20 @@ export async function PATCH(req: Request, ctx: RouteCtx) {
     return NextResponse.json({ error: "Pasta não encontrada" }, { status: 404 });
   }
 
-  let body: { name?: string };
+  let body: { title?: string };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
   }
-  const name = body.name?.trim();
-  if (!name) {
-    return NextResponse.json({ error: "Nome obrigatório" }, { status: 400 });
+  const title = body.title?.trim();
+  if (!title) {
+    return NextResponse.json({ error: "Título obrigatório" }, { status: 400 });
   }
 
   await db
     .update(userFolders)
-    .set({ name, updatedAt: new Date() })
+    .set({ title, updatedAt: new Date() })
     .where(
       and(eq(userFolders.id, id), eq(userFolders.userId, authResult.userId)),
     );
