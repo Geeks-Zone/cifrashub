@@ -8,7 +8,7 @@ import { PublicShareView } from "@/components/share/public-share-view";
 
 type PageProps = { params: Promise<{ token: string }> };
 
-/** Deduplicated via React cache — generateMetadata + page share a single query. */
+/** Deduplicated via React cache - generateMetadata + page share a single query. */
 const fetchSharePayload = cache(async function fetchSharePayload(
   token: string,
 ): Promise<ShareSnapshotPayload | null> {
@@ -41,19 +41,33 @@ export async function generateMetadata({
   const payload = await fetchSharePayload(token);
 
   if (!payload) {
-    return { title: "Link inválido" };
+    return {
+      title: "Link invalido",
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
   }
 
   if (payload.type === "arrangement") {
     return {
-      title: `${payload.song.title} — ${payload.song.artist}`,
+      title: `${payload.song.title} - ${payload.song.artist}`,
       description: `Cifra de ${payload.song.title} por ${payload.song.artist}`,
+      robots: {
+        index: false,
+        follow: false,
+      },
     };
   }
 
   return {
     title: payload.title,
     description: payload.description ?? `Setlist: ${payload.title}`,
+    robots: {
+      index: false,
+      follow: false,
+    },
   };
 }
 
