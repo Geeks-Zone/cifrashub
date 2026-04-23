@@ -8,7 +8,7 @@ interface LibraryState {
   localSetlistsRaw: LocalSetlistStored[];
   setlistSummaries: SetlistSummary[];
   libraryLoaded: boolean;
-  
+
   // Actions
   setFolders: (folders: Folder[]) => void;
   setRecentes: (recentes: StoredSong[]) => void;

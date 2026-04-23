@@ -17,7 +17,7 @@ async function main() {
   // Agrupar pastas por userId
   const foldersByUser = new Map<string, typeof allFolders>();
   for (const f of allFolders) {
-    if (f.name === "Favoritos") {
+    if (f.title === "Favoritos") {
       const arr = foldersByUser.get(f.userId) || [];
       arr.push(f);
       foldersByUser.set(f.userId, arr);

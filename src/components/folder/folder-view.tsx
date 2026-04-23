@@ -79,7 +79,7 @@ export function FolderView({
                 fill="currentColor"
                 fillOpacity={0.2}
               />
-              {folder.name}
+              {folder.title}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
               {folder.songs.length} músicas salvas offline
@@ -152,7 +152,7 @@ export function FolderView({
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Apagar pasta &ldquo;{folder.name}&rdquo;?</AlertDialogTitle>
+            <AlertDialogTitle>Apagar pasta &ldquo;{folder.title}&rdquo;?</AlertDialogTitle>
             <AlertDialogDescription>
               Todas as {folder.songs.length} cifras salvas nesta pasta serão
               removidas. Esta ação não pode ser desfeita.

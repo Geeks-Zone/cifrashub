@@ -40,7 +40,7 @@ export async function ensureDefaultFolder(userId: string) {
   if (existing.length === 0) {
     await db.insert(userFolders).values({
       userId,
-      name: "Favoritos",
+      title: "Favoritos",
       position: 0,
       isDefault: true,
     });
@@ -49,7 +49,7 @@ export async function ensureDefaultFolder(userId: string) {
 
   const hasDefault = existing.some((f) => f.isDefault);
   if (!hasDefault) {
-    const favoritos = existing.find((f) => f.name === "Favoritos");
+    const favoritos = existing.find((f) => f.title === "Favoritos");
     if (favoritos) {
       await db
         .update(userFolders)
@@ -85,7 +85,7 @@ export async function loadCloudFoldersAndSongs(userId: string): Promise<{
 
   const folders: Folder[] = folderRows.map((f) => ({
     id: f.id,
-    name: f.name,
+    title: f.title,
     isDefault: f.isDefault,
     songs: songRows
       .filter((s) => s.folderId === f.id && !s.isRecent)

@@ -47,7 +47,7 @@ export function useLibraryActions() {
       } else {
         const newFolder: Folder = {
           id: Date.now().toString(),
-          name: newFolderName.trim(),
+          title: newFolderName.trim(),
           songs: [],
         };
         const next = [...folders, newFolder];

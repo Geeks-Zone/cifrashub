@@ -8,10 +8,10 @@ import {
   text,
   timestamp,
   uniqueIndex,
+  uuid,
 } from "drizzle-orm/pg-core";
 import type { Section, StoredSongUiPrefs } from "@/lib/types";
 
-/** Auth.js default table names (Drizzle adapter) */
 export const users = pgTable("user", {
   id: text("id")
     .primaryKey()
@@ -71,12 +71,11 @@ export const verificationTokens = pgTable(
 export const userFolders = pgTable(
   "user_folder",
   {
-    id: text("id")
-      .primaryKey()
-      .$defaultFn(() => crypto.randomUUID()),
-    /** ID do Better Auth / Neon Auth — sem FK: a tabela `user` do Drizzle não é a fonte da verdade do auth. */
-    userId: text("user_id").notNull(),
-    name: text("name").notNull(),
+    id: uuid("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+    // FK to neon_auth."user" is applied by scripts/add-user-fk-cascade.sql
+    // after drizzle-kit push, because Neon Auth owns that table.
+    userId: uuid("user_id").notNull(),
+    title: text("title").notNull(),
     position: integer("position").notNull().default(0),
     isDefault: boolean("is_default").notNull().default(false),
     createdAt: timestamp("created_at", { mode: "date" })
@@ -94,13 +93,11 @@ export const userSongs = pgTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
-    userId: text("user_id").notNull(),
-    folderId: text("folder_id").references(() => userFolders.id, {
+    userId: uuid("user_id").notNull(),
+    folderId: uuid("folder_id").references(() => userFolders.id, {
       onDelete: "cascade",
     }),
-    /** Identidade de import / compat (ex.: artistSlug-slug). */
     songId: text("song_id").notNull(),
-    /** Instância única do arranjo (setlists, unicidade por pasta/recentes). */
     arrangementId: text("arrangement_id")
       .notNull()
       .default(sql`(gen_random_uuid())::text`),
@@ -138,7 +135,7 @@ export const userSetlists = pgTable("user_setlist", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  userId: text("user_id").notNull(),
+  userId: uuid("user_id").notNull(),
   title: text("title").notNull(),
   description: text("description"),
   position: integer("position").notNull().default(0),
@@ -160,8 +157,6 @@ export const userSetlistItems = pgTable(
     notes: text("notes"),
     createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
   },
-  /* position é gerenciado pela aplicação; unique index removido para evitar
-     conflitos durante reorder (neon-http não suporta transações clássicas). */
 );
 
 export const shareSnapshots = pgTable("share_snapshot", {
@@ -170,7 +165,7 @@ export const shareSnapshots = pgTable("share_snapshot", {
     .$defaultFn(() => crypto.randomUUID()),
   resourceType: text("resource_type").notNull(),
   payload: jsonb("payload").notNull().$type<unknown>(),
-  createdByUserId: text("created_by_user_id").notNull(),
+  createdByUserId: uuid("created_by_user_id").notNull(),
   createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
 });
 
@@ -187,24 +182,11 @@ export const shareTokens = pgTable("share_token", {
   createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
 });
 
-export const usersRelations = relations(users, ({ many }) => ({
-  folders: many(userFolders),
-  songs: many(userSongs),
-}));
-
-export const userFoldersRelations = relations(userFolders, ({ many, one }) => ({
-  user: one(users, {
-    fields: [userFolders.userId],
-    references: [users.id],
-  }),
+export const userFoldersRelations = relations(userFolders, ({ many }) => ({
   songs: many(userSongs),
 }));
 
 export const userSongsRelations = relations(userSongs, ({ one }) => ({
-  user: one(users, {
-    fields: [userSongs.userId],
-    references: [users.id],
-  }),
   folder: one(userFolders, {
     fields: [userSongs.folderId],
     references: [userFolders.id],

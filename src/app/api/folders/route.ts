@@ -17,15 +17,15 @@ export async function POST(req: Request) {
   const authResult = await requireUserId();
   if ("error" in authResult) return authResult.error;
 
-  let body: { name?: string };
+  let body: { title?: string };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
   }
-  const name = body.name?.trim();
-  if (!name) {
-    return NextResponse.json({ error: "Nome obrigatório" }, { status: 400 });
+  const title = body.title?.trim();
+  if (!title) {
+    return NextResponse.json({ error: "Título obrigatório" }, { status: 400 });
   }
 
   const existing = await db
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
     .insert(userFolders)
     .values({
       userId: authResult.userId,
-      name,
+      title,
       position,
       isDefault: false,
     })

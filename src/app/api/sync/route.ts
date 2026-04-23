@@ -68,14 +68,17 @@ async function resolveFolderId(
   localFolder: Folder,
   cloudFolders: (typeof userFolders.$inferSelect)[],
 ): Promise<string> {
-  const isDefaultLocal = localFolder.isDefault || localFolder.id === "default" || localFolder.name === "Favoritos";
+  const isDefaultLocal =
+    localFolder.isDefault ||
+    localFolder.id === "default" ||
+    localFolder.title === "Favoritos";
 
   if (isDefaultLocal) {
-    const def = cloudFolders.find((f) => f.isDefault || f.name === "Favoritos");
+    const def = cloudFolders.find((f) => f.isDefault || f.title === "Favoritos");
     if (def) return def.id;
   }
 
-  const byName = cloudFolders.find((f) => f.name === localFolder.name);
+  const byName = cloudFolders.find((f) => f.title === localFolder.title);
   if (byName) return byName.id;
 
   const position =
@@ -87,7 +90,7 @@ async function resolveFolderId(
     .insert(userFolders)
     .values({
       userId,
-      name: localFolder.name,
+      title: localFolder.title,
       position,
       isDefault: isDefaultLocal,
     })

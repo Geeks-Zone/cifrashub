@@ -9,7 +9,7 @@ import { fetchChordsHtml } from "@/lib/fetch-proxy";
 import { processHtmlAndExtract } from "@/lib/parser";
 import { enrichStoredSongWithYoutube } from "@/hooks/use-song-loader";
 import { cloudAddSongToFolder, cloudRemoveSongFromFolder } from "@/lib/storage";
-import { arrangementKey, currentSongKey } from "@/lib/stored-song-key";
+import { arrangementKey } from "@/lib/stored-song-key";
 import { useSession } from "@/hooks/use-session";
 import type { SearchResultSong, StoredSong } from "@/lib/types";
 
@@ -17,7 +17,7 @@ export default function FolderPage() {
   const params = useParams();
   const router = useRouter();
   const folderId = Array.isArray(params.id) ? params.id[0] : params.id;
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const isCloud = status === "authenticated";
 
   const folders = useLibraryStore((s) => s.folders);

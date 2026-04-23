@@ -38,8 +38,9 @@ if (process.env.VERCEL_ENV === "production") {
     process.exit(1);
   }
   // 1. Migração SQL (backfill de dados + criação de tabelas). Idempotente.
-  execSync("node scripts/migrate.cjs", { stdio: "inherit" });
+  execSync("node scripts/migrate.cjs pre", { stdio: "inherit" });
   // 2. drizzle-kit push alinha o schema restante (colunas, defaults, tipos).
   execSync("npm run db:push:ci", { stdio: "inherit" });
+  execSync("node scripts/migrate.cjs post", { stdio: "inherit" });
 }
 execSync("npm run build", { stdio: "inherit" });

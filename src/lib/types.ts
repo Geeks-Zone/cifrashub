@@ -83,7 +83,7 @@ export interface StoredSong extends CurrentSongMeta {
 
 export interface Folder {
   id: string;
-  name: string;
+  title: string;
   songs: StoredSong[];
   /** Pasta padrão (ex.: Favoritos); não deve ser excluída. */
   isDefault?: boolean;

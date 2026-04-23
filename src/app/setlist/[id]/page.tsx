@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { SetlistDetailViewScreen } from "@/components/setlist/setlist-detail-view";
 import { useLibraryStore } from "@/store/use-library-store";
@@ -20,17 +20,17 @@ export default function SetlistPage() {
   const params = useParams();
   const router = useRouter();
   const setId = (Array.isArray(params.id) ? params.id[0] : params.id) || "";
-  
+
   const folders = useLibraryStore((s) => s.folders);
   const recentes = useLibraryStore((s) => s.recentes);
-  
-  const { data: session, status } = useSession();
+
+  const { status } = useSession();
   const isCloud = status === "authenticated";
-  
+
   const [detail, setDetail] = useState<SetlistDetailView | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const loadSetlist = async () => {
+  const loadSetlist = useCallback(async () => {
     try {
       if (isCloud) {
         const d = await cloudGetSetlist(setId);
@@ -49,12 +49,12 @@ export default function SetlistPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [folders, isCloud, recentes, setId]);
 
   useEffect(() => {
     if (status === "loading") return;
     loadSetlist();
-  }, [setId, isCloud, status, folders, recentes]); // Re-run if folders change so local setlist parses correct songs
+  }, [loadSetlist, status]);
 
   const onAddItem = async (arrangementId: string) => {
     if (!detail) return;
@@ -103,7 +103,7 @@ export default function SetlistPage() {
     if (idx < 0) return;
     const dest = idx + direction;
     if (dest < 0 || dest >= items.length) return;
-    
+
     // swapping positions
     const newItems = [...items];
     const temp = newItems[idx].position;

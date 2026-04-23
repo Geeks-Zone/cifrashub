@@ -1,23 +1,19 @@
 "use client";
 
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SongView } from "@/components/song/song-view";
 import { SongViewProvider } from "@/components/song/song-context";
 import { usePlayerStore } from "@/store/use-player-store";
 import { useLibraryStore } from "@/store/use-library-store";
-import { useLibraryActions } from "@/hooks/use-library-actions";
 import { CurrentSongMeta, Section } from "@/lib/types";
 import { fetchChordsHtml } from "@/lib/fetch-proxy";
 import { processHtmlAndExtract } from "@/lib/parser";
 
 export default function SongPage() {
   const params = useParams();
-  const searchParams = useSearchParams();
   const router = useRouter();
-  
-  const folderId = searchParams.get("folderId");
-  const editReturn = searchParams.get("edit");
+
   const slugParam = Array.isArray(params.id) ? params.id[0] : params.id; // actually should be artistSlug-slug
 
   const [currentSong, setCurrentSong] = useState<CurrentSongMeta | null>(null);
@@ -27,7 +23,7 @@ export default function SongPage() {
   // Here we would ideally load the song from library or remote
   useEffect(() => {
     if (!slugParam) return;
-    
+
     const [artistSlug, ...rest] = slugParam.split("-");
     const slug = rest.join("-");
 
