@@ -54,7 +54,7 @@ export function HomeView() {
 
   const onSelectSearchResult = (res: SearchResultSong) => {
     // Actually handle it by URL redirect
-    router.push(`/song/${res.artistSlug}-${res.slug}`);
+    router.push(`/song/${res.artistSlug}/${res.slug}`);
   };
 
   const onSelectArtistResult = (res: SearchResultArtist) => {
@@ -62,7 +62,7 @@ export function HomeView() {
   };
 
   const onSelectRecent = (song: import("@/lib/types").StoredSong) => {
-    router.push(`/song/${song.artistSlug}-${song.slug}`);
+    router.push(`/song/${song.artistSlug}/${song.slug}`);
   };
 
   const onCreateSetlist = async (title: string) => {

@@ -29,29 +29,39 @@ async function fetchWithProxies(
     `https://api.allorigins.win/get?url=${encodedUrl}`,
   ];
 
-  for (const proxy of proxies) {
-    signal?.throwIfAborted();
+  const tryProxy = async (proxy: string): Promise<string> => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+
+    // Link parent signal to this controller (fallback for browsers without AbortSignal.any)
+    const onParentAbort = () => controller.abort();
+    signal?.addEventListener("abort", onParentAbort, { once: true });
+
     try {
-      const res = await fetch(proxy, { cache: "no-store", signal });
-      if (!res.ok) continue;
+      const res = await fetch(proxy, { cache: "no-store", signal: controller.signal });
+      if (!res.ok) throw new Error("Not ok");
       let dataText = await res.text();
 
       if (proxy.includes("/get?url=")) {
-        try {
-          dataText = JSON.parse(dataText).contents as string;
-        } catch {
-          continue;
-        }
+        dataText = JSON.parse(dataText).contents as string;
       }
 
-      if (dataText && !isCloudflareBlock(dataText)) {
-        return dataText;
+      if (!dataText || isCloudflareBlock(dataText)) {
+        throw new Error("Blocked");
       }
-    } catch (e) {
-      if (e instanceof DOMException && e.name === "AbortError") throw e;
+      return dataText;
+    } finally {
+      clearTimeout(timeout);
+      signal?.removeEventListener("abort", onParentAbort);
     }
+  };
+
+  try {
+    return await Promise.any(proxies.map(tryProxy));
+  } catch {
+    if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
+    return null;
   }
-  return null;
 }
 
 const PRINT_URL = (artistSlug: string, slug: string) =>

@@ -1,7 +1,7 @@
 "use client";
 
 import { CifraClubMeta, SongHeader } from "./song-header";
-import { SongMobileToolbar, SongToolbar } from "./song-toolbar";
+import { SongToolbar } from "./song-toolbar";
 
 import { SaveModal } from "./save-modal";
 import { ChordPopup } from "./chord-popup";
@@ -15,20 +15,22 @@ import { ArtistLinkButton } from "./artist-link-button";
 import { songViewMainClassName } from "@/lib/song-article-layout";
 import { currentSongKey } from "@/lib/stored-song-key";
 import { useSongViewContext } from "./song-context";
+import { useAutoScroll } from "@/hooks/use-auto-scroll";
+import { useMetronome } from "@/hooks/use-metronome";
+import { useSongKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 
 /**
  * View principal de visualização de cifra.
  *
- * Refatorado: zero props — tudo vem do SongViewContext (provido pelo CifrasApp).
+ * Refatorado: zero props — tudo vem do SongViewContext (provido pelo SongPage).
  * Responsabilidade: layout e orquestração dos sub-componentes.
  *
  * Melhorias:
- * - Desktop toolbar oculta em mobile; SongMobileToolbar fixa no rodapé em mobile
+ * - Toolbar unificada responsiva: bottom no mobile, lateral direita no desktop
  * - Título/artista visível em mobile (via SongHeader e bloco mobile no main)
- * - Overlay redundante do DisplaySettings removido (Popover já gerencia dismiss)
  * - SongLoadingState e SongErrorState extraídos como componentes dedicados
  * - ArtistLinkButton unificado
- * - padding-bottom diferenciado: pb-20 mobile / pb-32 desktop
+ * - padding-bottom diferenciado: pb-20 mobile / pb-16 desktop
  */
 export function SongView() {
   const {
@@ -63,7 +65,23 @@ export function SongView() {
     columns,
     spacingOffset,
     mirrored,
+    autoScroll,
+    scrollSpeed,
+    setAutoScroll,
+    metronomeActive,
+    bpm,
   } = useSongViewContext();
+
+  useAutoScroll(autoScroll, scrollSpeed);
+  useMetronome(metronomeActive, bpm);
+  useSongKeyboardShortcuts({
+    enabled: !isParsing && !parseError,
+    onToggleAutoScroll: () => setAutoScroll(!autoScroll),
+    onToggleZen: onToggleZen,
+    onScrollDown: () => window.scrollBy({ top: window.innerHeight / 2, behavior: "smooth" }),
+    onScrollUp: () => window.scrollBy({ top: -window.innerHeight / 2, behavior: "smooth" }),
+  });
+
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-background pb-20 sm:pb-16 selection:bg-primary/30 print:bg-white print:text-black">
@@ -73,9 +91,8 @@ export function SongView() {
       {/* Botão de saída do modo Zen */}
       {zenMode && <ZenExitButton onExit={onToggleZen} />}
 
-      {/* Toolbars: desktop (lateral) + mobile (rodapé) */}
+      {/* Toolbars: responsiva (bottom no mobile, right no desktop) */}
       <SongToolbar />
-      <SongMobileToolbar />
 
       {/* Modal de salvar em pasta */}
       <SaveModal
