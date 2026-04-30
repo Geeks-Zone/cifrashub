@@ -43,6 +43,7 @@ interface PlayerState {
   setBpm: (bpm: number) => void;
 
   setYoutubeMiniOpen: (open: boolean) => void;
+  reset: () => void;
 }
 
 export const usePlayerStore = create<PlayerState>((set) => ({
@@ -87,4 +88,22 @@ export const usePlayerStore = create<PlayerState>((set) => ({
   setBpm: (bpm) => set({ bpm }),
 
   setYoutubeMiniOpen: (youtubeMiniOpen) => set({ youtubeMiniOpen }),
+  reset: () => set({
+    tone: 0,
+    capo: 0,
+    simplified: false,
+    activeChord: null,
+    showTabs: true,
+    mirrored: false,
+    fontSizeOffset: 0,
+    columns: 1,
+    spacingOffset: 0,
+    zenMode: false,
+    autoScroll: false,
+    scrollSpeed: 2,
+    displaySettingsOpen: false,
+    metronomeActive: false,
+    bpm: 100,
+    youtubeMiniOpen: false,
+  }),
 }));

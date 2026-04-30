@@ -321,6 +321,22 @@ export function processHtmlAndExtract(
 
   const parser = new DOMParser();
   const doc = parser.parseFromString(htmlContent, "text/html");
+
+  let extractedTitle = doc.querySelector("h1")?.textContent?.trim();
+  let extractedArtist = doc.querySelector("h2")?.textContent?.trim();
+  
+  if (!extractedTitle || !extractedArtist) {
+    const titleTag = doc.querySelector("title")?.textContent;
+    if (titleTag && titleTag.includes(" - ")) {
+      const parts = titleTag.split(" - ");
+      extractedTitle = extractedTitle || parts[0]?.trim();
+      extractedArtist = extractedArtist || parts[1]?.trim();
+    }
+  }
+
+  extractedTitle = extractedTitle || title || slug.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+  extractedArtist = extractedArtist || artistName || artistSlug.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+
   let contentNode: Element | null =
     doc.querySelector("#cifra_conteudo") ??
     doc.querySelector(".g-fix pre") ??
@@ -344,8 +360,8 @@ export function processHtmlAndExtract(
     return {
       id: songId,
       arrangementId: randomUuid(),
-      title,
-      artist: artistName,
+      title: extractedTitle,
+      artist: extractedArtist,
       artistSlug,
       slug,
       sourceArtistSlug: artistSlug,

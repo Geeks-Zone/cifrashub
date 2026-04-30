@@ -133,7 +133,7 @@ export default function SetlistPage() {
   };
 
   const onOpenSong = (song: StoredSong) => {
-      router.push(`/song/${song.artistSlug}-${song.slug}`);
+      router.push(`/song/${song.artistSlug}/${song.slug}`);
   };
 
   if (loading) {

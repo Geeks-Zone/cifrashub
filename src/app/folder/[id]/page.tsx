@@ -95,7 +95,7 @@ export default function FolderPage() {
   };
 
   const onOpenSong = (song: StoredSong) => {
-    router.push(`/song/${song.artistSlug}-${song.slug}?folderId=${folderId}`);
+    router.push(`/song/${song.artistSlug}/${song.slug}?folderId=${folderId}`);
   };
 
   const doDelete = async (id: string) => {

@@ -41,8 +41,8 @@ export function useLibraryActions() {
           const { folders: next } = await cloudCreateFolder(newFolderName.trim());
           setFolders(next);
           notifyCloudMutation();
-        } catch {
-          /* noop */
+        } catch (error) {
+          console.error("Failed to create folder in cloud", error);
         }
       } else {
         const newFolder: Folder = {
@@ -68,8 +68,8 @@ export function useLibraryActions() {
           const { folders: next } = await cloudDeleteFolder(folderId);
           setFolders(next);
           notifyCloudMutation();
-        } catch {
-          /* noop */
+        } catch (error) {
+          console.error("Failed to delete folder in cloud", error);
         }
       } else {
         const next = folders.filter((f) => f.id !== folderId);
@@ -88,7 +88,10 @@ export function useLibraryActions() {
           setRecentes(synced);
           notifyCloudMutation();
         })
-        .catch(() => saveRecentes([]));
+        .catch((error) => {
+          console.error("Failed to clear recentes in cloud", error);
+          saveRecentes([]);
+        });
     } else {
       saveRecentes([]);
     }
@@ -104,7 +107,10 @@ export function useLibraryActions() {
             setRecentes(synced);
             notifyCloudMutation();
           })
-          .catch(() => saveRecentes(next));
+          .catch((error) => {
+            console.error("Failed to remove from recentes in cloud", error);
+            saveRecentes(next);
+          });
       } else {
         saveRecentes(next);
       }
@@ -126,7 +132,10 @@ export function useLibraryActions() {
             setRecentes(synced);
             notifyCloudMutation();
           })
-          .catch(() => saveRecentes(next));
+          .catch((error) => {
+            console.error("Failed to add to recentes in cloud", error);
+            saveRecentes(next);
+          });
       } else {
         saveRecentes(next);
       }

@@ -204,9 +204,9 @@ export function SongHeader({ extraActions }: SongHeaderProps) {
             </Button>
             {autoScroll && (
               <div className="hidden items-center gap-0.5 sm:flex">
-                <Button type="button" variant="ghost" size="icon" className="size-7 rounded-lg text-muted-foreground" onClick={() => setScrollSpeed((s) => Math.max(1, s - 1))} disabled={scrollSpeed <= 1}><Rewind className="size-3" /></Button>
+                <Button type="button" variant="ghost" size="icon" className="size-7 rounded-lg text-muted-foreground" onClick={() => setScrollSpeed(Math.max(1, scrollSpeed - 1))} disabled={scrollSpeed <= 1}><Rewind className="size-3" /></Button>
                 <span className="min-w-[1.5rem] text-center text-[10px] font-bold text-primary">{scrollSpeed}x</span>
-                <Button type="button" variant="ghost" size="icon" className="size-7 rounded-lg text-muted-foreground" onClick={() => setScrollSpeed((s) => Math.min(5, s + 1))} disabled={scrollSpeed >= 5}><FastForward className="size-3" /></Button>
+                <Button type="button" variant="ghost" size="icon" className="size-7 rounded-lg text-muted-foreground" onClick={() => setScrollSpeed(Math.min(5, scrollSpeed + 1))} disabled={scrollSpeed >= 5}><FastForward className="size-3" /></Button>
               </div>
             )}
           </div>
@@ -229,8 +229,8 @@ export function SongHeader({ extraActions }: SongHeaderProps) {
             </Button>
             {metronomeActive && (
               <div className="hidden items-center gap-0.5 sm:flex">
-                <Button type="button" variant="ghost" size="icon" className="size-7 rounded-lg text-muted-foreground" onClick={() => setBpm((b) => Math.max(40, b - 5))}><Minus className="size-3" /></Button>
-                <Button type="button" variant="ghost" size="icon" className="size-7 rounded-lg text-muted-foreground" onClick={() => setBpm((b) => Math.min(240, b + 5))}><Plus className="size-3" /></Button>
+                <Button type="button" variant="ghost" size="icon" className="size-7 rounded-lg text-muted-foreground" onClick={() => setBpm(Math.max(40, bpm - 5))}><Minus className="size-3" /></Button>
+                <Button type="button" variant="ghost" size="icon" className="size-7 rounded-lg text-muted-foreground" onClick={() => setBpm(Math.min(240, bpm + 5))}><Plus className="size-3" /></Button>
               </div>
             )}
           </div>

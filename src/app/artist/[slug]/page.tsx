@@ -13,7 +13,7 @@ export default function ArtistPage() {
   const artistNameFromQuery = searchParams.get("name") || artistSlug || ""; // Simplistic fallback
 
   const handleOpenSong = (song: SearchResultSong) => {
-    router.push(`/song/${song.artistSlug}-${song.slug}`);
+    router.push(`/song/${song.artistSlug}/${song.slug}`);
   };
 
   return (

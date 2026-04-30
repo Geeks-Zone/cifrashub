@@ -178,9 +178,27 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
       void refreshCloudState();
     };
 
+    let intervalId: number | null = null;
+
+    const startPolling = () => {
+      if (!intervalId) {
+        intervalId = window.setInterval(runRefresh, CLOUD_SYNC_POLL_MS);
+      }
+    };
+
+    const stopPolling = () => {
+      if (intervalId) {
+        window.clearInterval(intervalId);
+        intervalId = null;
+      }
+    };
+
     const handleVisibility = () => {
       if (document.visibilityState === "visible") {
         runRefresh();
+        startPolling();
+      } else {
+        stopPolling();
       }
     };
 
@@ -189,7 +207,9 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
       runRefresh();
     };
 
-    const intervalId = window.setInterval(runRefresh, CLOUD_SYNC_POLL_MS);
+    if (document.visibilityState === "visible") {
+      startPolling();
+    }
 
     window.addEventListener("focus", runRefresh);
     window.addEventListener("online", runRefresh);
@@ -197,7 +217,7 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
     document.addEventListener("visibilitychange", handleVisibility);
 
     return () => {
-      window.clearInterval(intervalId);
+      stopPolling();
       window.removeEventListener("focus", runRefresh);
       window.removeEventListener("online", runRefresh);
       window.removeEventListener("storage", handleStorage);

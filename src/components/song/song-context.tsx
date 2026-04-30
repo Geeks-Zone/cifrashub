@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext } from "react";
-import type { Dispatch, ReactNode, SetStateAction } from "react";
+import type { ReactNode } from "react";
 import type { CurrentSongMeta, Folder, Section } from "@/lib/types";
 
 /**
@@ -17,9 +17,9 @@ type SongViewContextValue = {
 
   // ─── Configurações de exibição ─────────────────────────────────────────────
   tone: number;
-  setTone: Dispatch<SetStateAction<number>>;
+  setTone: (v: number) => void;
   capo: number;
-  setCapo: Dispatch<SetStateAction<number>>;
+  setCapo: (v: number) => void;
   simplified: boolean;
   setSimplified: (v: boolean) => void;
   showTabs: boolean;
@@ -27,11 +27,11 @@ type SongViewContextValue = {
   mirrored: boolean;
   setMirrored: (v: boolean) => void;
   fontSizeOffset: number;
-  setFontSizeOffset: Dispatch<SetStateAction<number>>;
+  setFontSizeOffset: (v: number) => void;
   columns: number;
-  setColumns: Dispatch<SetStateAction<number>>;
+  setColumns: (v: number) => void;
   spacingOffset: number;
-  setSpacingOffset: Dispatch<SetStateAction<number>>;
+  setSpacingOffset: (v: number) => void;
   /** Transposição efetiva = tone - capo (para display do SongContent). */
   effectiveTransposition: number;
 
@@ -40,11 +40,11 @@ type SongViewContextValue = {
   autoScroll: boolean;
   setAutoScroll: (v: boolean) => void;
   scrollSpeed: number;
-  setScrollSpeed: Dispatch<SetStateAction<number>>;
+  setScrollSpeed: (v: number) => void;
   metronomeActive: boolean;
   setMetronomeActive: (v: boolean) => void;
   bpm: number;
-  setBpm: Dispatch<SetStateAction<number>>;
+  setBpm: (v: number) => void;
 
 
   // ─── Estado de UI ──────────────────────────────────────────────────────────
