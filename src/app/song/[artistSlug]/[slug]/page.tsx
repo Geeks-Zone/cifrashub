@@ -3,7 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { SongView } from "@/components/song/song-view";
-import { SongViewProvider } from "@/components/song/song-context";
+import { SongViewProvider, type SongViewContextValue } from "@/components/song/song-context";
 import { usePlayerStore } from "@/store/use-player-store";
 import { useLibraryStore } from "@/store/use-library-store";
 import type { Section, StoredSong } from "@/lib/types";
@@ -97,31 +97,27 @@ export default function SongPage() {
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
 
-  if (isLoading) return <SongPageSkeleton />;
-  if (error) return <SongPageError error={error} onRetry={load} />;
-  if (!currentSong) return <SongPageError error={new Error("Cifra não encontrada.")} onRetry={load} />;
-
-  const isSavedInAnyFolder = folders.some((f) =>
+  const isSavedInAnyFolder = currentSong ? folders.some((f) =>
     f.songs.some((s) => s.artistSlug === currentSong.artistSlug && s.slug === currentSong.slug)
-  );
+  ) : false;
 
   const onToggleSongInFolder = async (folderId: string) => {
     const isSaved = folders.some((f) =>
       f.id === folderId &&
-      f.songs.some((s) => s.artistSlug === currentSong.artistSlug && s.slug === currentSong.slug)
+      f.songs.some((s) => s.artistSlug === currentSong?.artistSlug && s.slug === currentSong?.slug)
     );
 
     if (isCloud) {
       try {
         if (isSaved) {
           const folder = folders.find(f => f.id === folderId);
-          const songInFolder = folder?.songs.find(s => s.artistSlug === currentSong.artistSlug && s.slug === currentSong.slug);
+          const songInFolder = folder?.songs.find(s => s.artistSlug === currentSong?.artistSlug && s.slug === currentSong?.slug);
           if (songInFolder) {
             const { folders: next } = await cloudRemoveSongFromFolder(folderId, songInFolder.arrangementId || songInFolder.id);
             setFolders(next);
             notifyCloudMutation();
           }
-        } else {
+        } else if (currentSong) {
           const { folders: next } = await cloudAddSongToFolder(folderId, currentSong);
           setFolders(next);
           notifyCloudMutation();
@@ -133,8 +129,8 @@ export default function SongPage() {
       const next = folders.map(f => {
         if (f.id === folderId) {
           if (isSaved) {
-            return { ...f, songs: f.songs.filter(s => !(s.artistSlug === currentSong.artistSlug && s.slug === currentSong.slug)) };
-          } else {
+            return { ...f, songs: f.songs.filter(s => !(s.artistSlug === currentSong?.artistSlug && s.slug === currentSong?.slug)) };
+          } else if (currentSong) {
             return { ...f, songs: [...f.songs, currentSong] };
           }
         }
@@ -152,7 +148,7 @@ export default function SongPage() {
     setNewFolderName("");
   };
 
-  const youtubeEmbedUrl = currentSong.youtubeId ? `https://www.youtube.com/embed/${currentSong.youtubeId}` : null;
+  const youtubeEmbedUrl = currentSong?.youtubeId ? `https://www.youtube.com/embed/${currentSong.youtubeId}` : null;
 
   const value = useMemo(() => ({
       currentSong,
@@ -200,13 +196,15 @@ export default function SongPage() {
       onToggleSongInFolder,
       onCreateFolderFromSave,
       youtubeEmbedUrl,
-      youtubeFallbackSearchQuery: currentSong.title + " " + currentSong.artist,
+      youtubeFallbackSearchQuery: currentSong ? currentSong.title + " " + currentSong.artist : "",
       onYoutubeVideoResolved: (youtubeId: string) => {
          setCurrentSong(prev => prev ? { ...prev, youtubeId } : prev);
       },
       onBack: () => router.back(),
       onOpenVideo: () => setYoutubeMiniOpen(true),
-      onOpenArtistSongs: () => router.push(`/artist/${currentSong.artistSlug}`),
+      onOpenArtistSongs: () => {
+        if (currentSong) router.push(`/artist/${currentSong.artistSlug}`);
+      },
       onPrint: () => window.print(),
       onTapZone: () => {},
       onToggleZen: () => {
@@ -215,6 +213,7 @@ export default function SongPage() {
           setZenMode(!current);
       },
       onOpenSongEditor: () => {
+          if (!currentSong) return;
           const ps = usePlayerStore.getState();
           writeEditSnapshot({
             v: 1,
@@ -257,8 +256,12 @@ export default function SongPage() {
     onToggleSongInFolder, onCreateFolderFromSave, router,
   ]);
 
+  if (isLoading) return <SongPageSkeleton />;
+  if (error) return <SongPageError error={error} onRetry={load} />;
+  if (!currentSong) return <SongPageError error={new Error("Cifra não encontrada.")} onRetry={load} />;
+
   return (
-    <SongViewProvider value={value}>
+    <SongViewProvider value={value as SongViewContextValue}>
        <SongView />
     </SongViewProvider>
   );

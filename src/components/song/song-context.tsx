@@ -8,7 +8,7 @@ import type { CurrentSongMeta, Folder, Section } from "@/lib/types";
  * Valor completo do contexto da view de cifra.
  * Elimina o prop-drilling de 45+ props entre CifrasApp → SongView → SongHeader/Toolbar/Display.
  */
-type SongViewContextValue = {
+export type SongViewContextValue = {
   // ─── Dados da música ───────────────────────────────────────────────────────
   currentSong: CurrentSongMeta;
   songData: Section[];
